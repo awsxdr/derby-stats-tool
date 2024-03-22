@@ -1,0 +1,8 @@
+.lineupTable {
+    justify-content: center;
+    display: flex;
+}
+
+.lineupEvent > div > div {
+    padding: 0;
+}

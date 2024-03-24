@@ -1,4 +1,4 @@
-import { Column, ColumnHeaderCell, EditableCell2, RenderMode, Table2 } from '@blueprintjs/table'
+import { Cell, Column, ColumnHeaderCell, EditableCell2, RenderMode, Table2 } from '@blueprintjs/table'
 import { ReactElement, useMemo } from 'react';
 import styles from './LineupSheet.module.css';
 import { LineupLine, Period, SkaterType, TeamType, useGameContext } from './GameStateContext';
@@ -73,6 +73,12 @@ export const LineupSheet = ({ teamType, period }: LineupSheetProps) => {
         />
     );
 
+    const renderReadOnlySkaterNumberCell = (skaterType: SkaterType) => (color: string) => (rowIndex: number) => (
+        <Cell style={{ backgroundColor: color }}>
+            {lineups[rowIndex]?.skaters[skaterType].number}
+        </Cell>
+    );
+
     const renderSkaterNumberCell = (skaterType: SkaterType) => (color: string) => (rowIndex: number) => (
         <EditableCell2
             style={{ backgroundColor: color }}
@@ -111,7 +117,7 @@ export const LineupSheet = ({ teamType, period }: LineupSheetProps) => {
         >
           <Column columnHeaderCellRenderer={renderHeader("Jam")} cellRenderer={renderAlternatingColorCell(renderJamNumberCell, LightBlue, MediumBlue)} />
           <Column columnHeaderCellRenderer={renderHeader("No Pivot")} cellRenderer={renderAlternatingColorCell(renderNoPivotCell, LightBlue, MediumBlue)} />
-          <Column columnHeaderCellRenderer={renderHeader("Jammer")} cellRenderer={renderAlternatingColorCell(renderSkaterNumberCell(SkaterType.Jammer), White, LightBlue)} />
+          <Column columnHeaderCellRenderer={renderHeader("Jammer")} cellRenderer={renderAlternatingColorCell(renderReadOnlySkaterNumberCell(SkaterType.Jammer), White, LightBlue)} />
           <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Jammer, 0), DarkBlue)} />
           <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Jammer, 1), DarkBlue)} />
           <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Jammer, 2), DarkBlue)} />

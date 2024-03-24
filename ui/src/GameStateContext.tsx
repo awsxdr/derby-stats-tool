@@ -1,5 +1,6 @@
 import { PropsWithChildren, createContext, useCallback, useContext, useEffect, useState } from "react";
 import { getCookie, setCookie } from 'typescript-cookie';
+import moment from 'moment';
 
 export enum TeamType {
     HOME = 'home',
@@ -16,7 +17,12 @@ type Skater = {
     name: string,
 }
 
-type TeamRoster = Skater[];
+type TeamRoster = {
+    league: string,
+    team: string,
+    color: string,
+    skaters: Skater[],
+};
 
 type Rosters = { [team in TeamType]: TeamRoster };
 
@@ -73,7 +79,19 @@ type LineupLines = LineupLine[];
 type PeriodLineups = { [team in TeamType]: LineupLines };
 type Lineups = { [period in Period]: PeriodLineups };
 
+export type GameDetails = {
+    venue: string,
+    city: string,
+    state: string,
+    gameNumber: string,
+    tournament: string,
+    hostLeague: string,
+    date: string,
+    time: string,
+}
+
 interface GameState {
+    game: GameDetails,
     rosters: Rosters,
     scores: Scores,
     penalties: Penalties,
@@ -81,9 +99,19 @@ interface GameState {
 }
 
 export const DefaultGameState = (): GameState => ({
+    game: { 
+        venue: '', 
+        city: '', 
+        state: '', 
+        gameNumber: '', 
+        tournament: '', 
+        hostLeague: '', 
+        date: moment(Date.now()).format("YYYY-MM-DD"), 
+        time: moment(Date.now()).format("HH:mm"), 
+    },
     rosters: {
-        home: [],
-        away: [],
+        home: { league: '', team: '', color: '', skaters: [] },
+        away: { league: '', team: '', color: '', skaters: [] },
     },
     scores: {
         1: { home: [], away: [] },

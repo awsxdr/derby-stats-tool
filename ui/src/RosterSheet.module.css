@@ -2,3 +2,9 @@
     justify-content: center;
     display: flex;
 }
+
+.teamDetailsContainer {
+    max-width: 500px;
+    margin: auto;
+    text-align: left;
+}

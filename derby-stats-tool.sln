@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.002.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lambdas", "lambdas", "{CF722687-758D-458B-8A5E-1DAC6A62E50F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "derbystats-pdf-export", "derbystats-pdf-export", "{3798996E-387E-455E-AFF4-8DEF42AC6A3B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "derbystats-pdf-export", "lambdas\derbystats-pdf-export\src\derbystats-pdf-export.csproj", "{40DEF078-2DF2-4BAF-AB5C-BF8E6B017534}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{99B32288-83CC-4FF3-BF97-7A85A719D131}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "derbystats-pdf-export.Tests", "lambdas\derbystats-pdf-export\test\derbystats-pdf-export.Tests\derbystats-pdf-export.Tests.csproj", "{BBCA4AF4-1BD3-4354-8494-646E5689FC71}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{40DEF078-2DF2-4BAF-AB5C-BF8E6B017534}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40DEF078-2DF2-4BAF-AB5C-BF8E6B017534}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40DEF078-2DF2-4BAF-AB5C-BF8E6B017534}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40DEF078-2DF2-4BAF-AB5C-BF8E6B017534}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BBCA4AF4-1BD3-4354-8494-646E5689FC71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BBCA4AF4-1BD3-4354-8494-646E5689FC71}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BBCA4AF4-1BD3-4354-8494-646E5689FC71}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BBCA4AF4-1BD3-4354-8494-646E5689FC71}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3798996E-387E-455E-AFF4-8DEF42AC6A3B} = {CF722687-758D-458B-8A5E-1DAC6A62E50F}
+		{40DEF078-2DF2-4BAF-AB5C-BF8E6B017534} = {3798996E-387E-455E-AFF4-8DEF42AC6A3B}
+		{99B32288-83CC-4FF3-BF97-7A85A719D131} = {3798996E-387E-455E-AFF4-8DEF42AC6A3B}
+		{BBCA4AF4-1BD3-4354-8494-646E5689FC71} = {99B32288-83CC-4FF3-BF97-7A85A719D131}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {91C6E8BB-28D1-4492-832E-620569FD86F9}
+	EndGlobalSection
+EndGlobal

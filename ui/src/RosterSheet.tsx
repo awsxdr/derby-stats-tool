@@ -2,6 +2,7 @@ import { Cell, Column, ColumnHeaderCell, EditableCell2, RenderMode, Table2 } fro
 import { useMemo } from 'react';
 import styles from './RosterSheet.module.css';
 import { TeamType, useGameContext } from './GameStateContext';
+import { FormGroup, InputGroup } from '@blueprintjs/core';
 
 const LightPink = "#ffe8ff";
 const White = "#ffffff";
@@ -17,29 +18,44 @@ export const RosterSheet = ({ teamType }: RosterSheetProps) => {
     const roster = useMemo(() => gameState.rosters[teamType], [gameState, teamType]);
 
     const handleSkaterNumberConfirm = (rowIndex: number) => (value: string) => {
-        if(!roster[rowIndex]) {
-            roster[rowIndex] = { number: value, name: '' };
+        if(!roster.skaters[rowIndex]) {
+            roster.skaters[rowIndex] = { number: value, name: '' };
         } else {
-            roster[rowIndex].number = value;
+            roster.skaters[rowIndex].number = value;
         }
 
         setGameState({ ...gameState, rosters: { ...gameState.rosters, [teamType]: roster }})
     }
 
     const handleSkaterNameConfirm = (rowIndex: number) => (value: string) => {
-        if(!roster[rowIndex]) {
-            roster[rowIndex] = { number: '', name: value };
+        if(!roster.skaters[rowIndex]) {
+            roster.skaters[rowIndex] = { number: '', name: value };
         } else {
-            roster[rowIndex].name = value;
+            roster.skaters[rowIndex].name = value;
         }
 
         setGameState({ ...gameState, rosters: { ...gameState.rosters, [teamType]: roster }})
     }
 
+    const setColor = (color: string) => {
+        roster.color = color;
+        setGameState({ ...gameState, rosters: { ...gameState.rosters, [teamType]: roster }});
+    }
+
+    const setLeague = (league: string) => {
+        roster.league = league;
+        setGameState({ ...gameState, rosters: { ...gameState.rosters, [teamType]: roster }});
+    }
+
+    const setTeam = (team: string) => {
+        roster.team = team;
+        setGameState({ ...gameState, rosters: { ...gameState.rosters, [teamType]: roster }});
+    }
+
     const renderSkaterNumberCell = (color: string) => (rowIndex: number) => (
         <EditableCell2 
             style={{ backgroundColor: color }}
-            value={(roster && roster[rowIndex]?.number) ?? ''}
+            value={(roster && roster.skaters && roster.skaters[rowIndex]?.number) ?? ''}
             onConfirm={handleSkaterNumberConfirm(rowIndex)}
         />
     );
@@ -47,7 +63,7 @@ export const RosterSheet = ({ teamType }: RosterSheetProps) => {
     const renderSkaterNameCell = (color: string) => (rowIndex: number) => (
         <EditableCell2 
             style={{ backgroundColor: color, textAlign: 'left' }}
-            value={(roster && roster[rowIndex]?.name) ?? ''}
+            value={(roster && roster.skaters && roster.skaters[rowIndex]?.name) ?? ''}
             onConfirm={handleSkaterNameConfirm(rowIndex)}
         />
     );
@@ -60,28 +76,41 @@ export const RosterSheet = ({ teamType }: RosterSheetProps) => {
         );
   
     const renderHeader = (name: string) => () => (
-      <ColumnHeaderCell style={{ backgroundColor: Black, color: White }}>
-        <span style={{ fontSize: '8pt' }}>{ name }</span>
-      </ColumnHeaderCell>
+        <ColumnHeaderCell style={{ backgroundColor: Black, color: White }}>
+            <span style={{ fontSize: '8pt' }}>{ name }</span>
+        </ColumnHeaderCell>
     );
-  
+
     return (
-      <div className={styles.rosterTable}>
-        <Table2 
-          numRows={20} 
-          enableRowResizing={false} 
-          enableColumnResizing={false}
-          enableRowHeader={false} 
-          enableColumnHeader={true}
-          enableFocusedCell={true}
-          enableGhostCells={false}
-          columnWidths={[100, 100, 600]}
-          renderMode={RenderMode.BATCH_ON_UPDATE}
-        >
-          <Column columnHeaderCellRenderer={renderHeader("# of players")} cellRenderer={renderPlayerNumberCell(LightPink)} />
-          <Column columnHeaderCellRenderer={renderHeader("Skater #")} cellRenderer={renderSkaterNumberCell(White)} />
-          <Column columnHeaderCellRenderer={renderHeader("Skater Name")} cellRenderer={renderSkaterNameCell(White)} />
-        </Table2>
-      </div>
+        <div>
+            <div className={styles.teamDetailsContainer}>
+                <FormGroup label="League name" labelFor='league-input'>
+                    <InputGroup id='league-input' fill value={roster.league} onValueChange={setLeague} />
+                </FormGroup>
+                <FormGroup label="Team name" labelFor='team-input'>
+                    <InputGroup id='league-input' fill value={roster.team} onValueChange={setTeam} />
+                </FormGroup>
+                <FormGroup label="Color" labelFor='color-input'>
+                    <InputGroup id='league-input' fill value={roster.color} onValueChange={setColor} />
+                </FormGroup>
+            </div>
+            <div className={styles.rosterTable}>
+                <Table2 
+                    numRows={20} 
+                    enableRowResizing={false} 
+                    enableColumnResizing={false}
+                    enableRowHeader={false} 
+                    enableColumnHeader={true}
+                    enableFocusedCell={true}
+                    enableGhostCells={false}
+                    columnWidths={[100, 100, 600]}
+                    renderMode={RenderMode.BATCH_ON_UPDATE}
+                >
+                    <Column columnHeaderCellRenderer={renderHeader("# of players")} cellRenderer={renderPlayerNumberCell(LightPink)} />
+                    <Column columnHeaderCellRenderer={renderHeader("Skater #")} cellRenderer={renderSkaterNumberCell(White)} />
+                    <Column columnHeaderCellRenderer={renderHeader("Skater Name")} cellRenderer={renderSkaterNameCell(White)} />
+                </Table2>
+            </div>
+        </div>
     )
-  }
+}

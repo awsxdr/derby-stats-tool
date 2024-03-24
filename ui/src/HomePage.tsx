@@ -25,6 +25,23 @@ export const HomePage = () => {
       setIsConfirmNewOpen(false);
     }, [setGameState, setIsConfirmNewOpen]);
 
+    const downloadFile = () => {
+        fetch('/api/export', { 
+            method: 'POST',
+            body: JSON.stringify(gameState),
+        }).then(response => {
+            response.blob().then(blob => {
+                const link = document.createElement('a');
+                link.href = window.URL.createObjectURL(blob);
+                link.download = 'stats.xlsx';
+
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            })
+        })
+    }
+
     return (
         <>
             <Navbar fixedToTop>
@@ -32,8 +49,8 @@ export const HomePage = () => {
                     <Navbar.Heading>DerbyStats</Navbar.Heading>
                     <Navbar.Divider />
                     <Button intent='none' minimal icon='document' onClick={() => confirmNew()} />
-                    <Button intent='none' minimal icon='folder-open' />
-                    <Button intent='none' minimal icon='download' onClick={() => console.log(JSON.stringify(gameState))} />
+                    <Button intent='none' minimal icon='folder-open' disabled />
+                    <Button intent='none' minimal icon='download' onClick={downloadFile} />
                     <Navbar.Divider />
                 </Navbar.Group>
                 <Tabs id='MainTabs' onChange={handleTabChange} selectedTabId={selectedTab} renderActiveTabPanelOnly large fill>

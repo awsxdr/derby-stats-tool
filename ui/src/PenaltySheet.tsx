@@ -65,7 +65,7 @@ export const PenaltySheet = ({ teamType, period }: PenaltySheetProps) => {
 
     const renderSkaterNumberCell = (color: string) => (rowIndex: number) => (
         <Cell className={styles.playerNumberCell} style={{ backgroundColor: color }}>
-            {(roster && roster[rowIndex]?.number) ?? ''}
+            {(roster && roster.skaters && roster.skaters[rowIndex]?.number) ?? ''}
         </Cell>
     );
 

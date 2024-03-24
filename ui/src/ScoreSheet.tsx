@@ -2,7 +2,7 @@ import { Column, ColumnHeaderCell, EditableCell2, RenderMode, Table2 } from '@bl
 import { ReactElement, useMemo } from 'react';
 import styles from './ScoreSheet.module.css';
 import { ToggleCell } from './ToggleCell';
-import { Period, ScoreLine, TeamType, useGameContext } from './GameStateContext';
+import { LineupLine, Period, ScoreLine, TeamType, useGameContext } from './GameStateContext';
 
 type ContentRendererFn = (rowIndex: number) => ReactElement;
 type CellRendererFn = (color: string) => ContentRendererFn;
@@ -21,6 +21,7 @@ export const ScoreSheet = ({ teamType, period }: ScoreSheetProps) => {
     const { gameState, setGameState } = useGameContext();
 
     const scores = useMemo(() => gameState.scores[period][teamType], [gameState, teamType, period]);
+    const lineups = useMemo(() => gameState.lineups[period][teamType], [gameState, period, teamType]);
 
     const renderAlternatingColorCell = (cellRenderer: CellRendererFn, lightColor: string, darkColor: string) =>
         (rowIndex: number) => cellRenderer(rowIndex % 2 == 0 ? lightColor : darkColor)(rowIndex);
@@ -41,27 +42,50 @@ export const ScoreSheet = ({ teamType, period }: ScoreSheetProps) => {
         gameTotal: '0'
     });
 
+    const DEFAULT_LINEUP_LINE: () => LineupLine = () => ({
+        jamNumber: '',
+        noPivot: false,
+        skaters: {
+            jammer: { number: '', events: ['', '', ''] },
+            pivot: { number: '', events: ['', '', ''] },
+            blocker1: { number: '', events: ['', '', ''] },
+            blocker2: { number: '', events: ['', '', ''] },
+            blocker3: { number: '', events: ['', '', ''] },
+        }
+    });
+
     const createScoreLineIfMissing = (rowIndex: number) => {
         if(!scores[rowIndex]) {
             scores[rowIndex] = DEFAULT_SCORE_LINE();
         }
     }
 
-    const updateScores = () => {
-        setGameState({ ...gameState, scores: { ...gameState.scores, [period]: { ...gameState.scores[period], [teamType]: scores }}});
+    const createLineupLineIfMissing = (rowIndex: number) => {
+        if(!lineups[rowIndex]) {
+            lineups[rowIndex] = DEFAULT_LINEUP_LINE();
+        }
     }
 
-    const handleChange = <T,>(setter: (line: ScoreLine, value: T) => void) => (rowIndex: number) => (value: T) => {
+    const updateGameState = () => {
+        setGameState({ 
+            ...gameState, 
+            scores: { ...gameState.scores, [period]: { ...gameState.scores[period], [teamType]: scores }},
+            lineups: { ...gameState.lineups, [period]: { ...gameState.lineups[period], [teamType]: lineups }},
+        });
+    }
+
+    const handleChange = <T,>(setter: (scoreLine: ScoreLine, lineupLine: LineupLine, value: T) => void) => (rowIndex: number) => (value: T) => {
         createScoreLineIfMissing(rowIndex);
-        setter(scores[rowIndex], value);
-        updateScores();
+        createLineupLineIfMissing(rowIndex);
+        setter(scores[rowIndex], lineups[rowIndex], value);
+        updateGameState();
     }
 
     const renderJamNumberCell = (color: string) => (rowIndex: number) => (
         <EditableCell2 
             style={{ backgroundColor: color }} 
             value={scores[rowIndex]?.jam} 
-            onConfirm={handleChange<string>((l, v) => l.jam = v)(rowIndex)}
+            onConfirm={handleChange<string>((l, _, v) => l.jam = v)(rowIndex)}
         />
     );
 
@@ -69,7 +93,11 @@ export const ScoreSheet = ({ teamType, period }: ScoreSheetProps) => {
         <EditableCell2
             style={{ backgroundColor: color }}
             value={scores[rowIndex]?.jammer}
-            onConfirm={handleChange<string>((l, v) => l.jammer = v)(rowIndex)}
+            onConfirm={value =>
+                handleChange<string>((s, l, v) => {
+                    s.jammer = v;
+                    l.skaters.jammer.number = v;
+                })(rowIndex)(value)}
         />
     );
 
@@ -77,7 +105,7 @@ export const ScoreSheet = ({ teamType, period }: ScoreSheetProps) => {
         <ToggleCell
             style={{ backgroundColor: color }}
             value={scores[rowIndex]?.lost}
-            onConfirm={handleChange<boolean>((l, v) => l.lost = v)(rowIndex)}
+            onConfirm={handleChange<boolean>((l, _, v) => l.lost = v)(rowIndex)}
         />
     );
 
@@ -85,7 +113,7 @@ export const ScoreSheet = ({ teamType, period }: ScoreSheetProps) => {
         <ToggleCell
             style={{ backgroundColor: color }}
             value={scores[rowIndex]?.lead}
-            onConfirm={handleChange<boolean>((l, v) => l.lead = v)(rowIndex)}
+            onConfirm={handleChange<boolean>((l, _, v) => l.lead = v)(rowIndex)}
         />
     );
 
@@ -93,7 +121,7 @@ export const ScoreSheet = ({ teamType, period }: ScoreSheetProps) => {
         <ToggleCell
             style={{ backgroundColor: color }}
             value={scores[rowIndex]?.call}
-            onConfirm={handleChange<boolean>((l, v) => l.call = v)(rowIndex)}
+            onConfirm={handleChange<boolean>((l, _, v) => l.call = v)(rowIndex)}
         />
     );
 
@@ -101,7 +129,7 @@ export const ScoreSheet = ({ teamType, period }: ScoreSheetProps) => {
         <ToggleCell
             style={{ backgroundColor: color }}
             value={scores[rowIndex]?.injury}
-            onConfirm={handleChange<boolean>((l, v) => l.injury = v)(rowIndex)}
+            onConfirm={handleChange<boolean>((l, _, v) => l.injury = v)(rowIndex)}
         />
     );
 
@@ -109,7 +137,7 @@ export const ScoreSheet = ({ teamType, period }: ScoreSheetProps) => {
         <ToggleCell
             style={{ backgroundColor: color }}
             value={scores[rowIndex]?.noInitial}
-            onConfirm={handleChange<boolean>((l, v) => l.noInitial = v)(rowIndex)}
+            onConfirm={handleChange<boolean>((l, _, v) => l.noInitial = v)(rowIndex)}
         />
     );
 
@@ -117,7 +145,7 @@ export const ScoreSheet = ({ teamType, period }: ScoreSheetProps) => {
         <EditableCell2
             style={{ backgroundColor: color }}
             value={scores[rowIndex]?.trips[trip]}
-            onConfirm={handleChange<string>((l, v) => l.trips[trip] = v)(rowIndex)}
+            onConfirm={handleChange<string>((l, _, v) => l.trips[trip] = v)(rowIndex)}
         />
     );
 
@@ -125,7 +153,7 @@ export const ScoreSheet = ({ teamType, period }: ScoreSheetProps) => {
         <EditableCell2
             style={{ backgroundColor: color }}
             value={scores[rowIndex]?.jamTotal}
-            onConfirm={handleChange<string>((l, v) => l.jamTotal = v)(rowIndex)}
+            onConfirm={handleChange<string>((l, _, v) => l.jamTotal = v)(rowIndex)}
         />
     );
 
@@ -133,7 +161,7 @@ export const ScoreSheet = ({ teamType, period }: ScoreSheetProps) => {
         <EditableCell2
             style={{ backgroundColor: color }}
             value={scores[rowIndex]?.gameTotal}
-            onConfirm={handleChange<string>((l, v) => l.gameTotal = v)(rowIndex)}
+            onConfirm={handleChange<string>((l, _, v) => l.gameTotal = v)(rowIndex)}
         />
     );
   

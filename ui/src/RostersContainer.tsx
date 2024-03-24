@@ -2,9 +2,10 @@ import { Navbar, Tab, TabId, Tabs } from "@blueprintjs/core";
 import { useState } from "react";
 import { RosterSheet } from "./RosterSheet";
 import { TeamType } from "./GameStateContext";
+import { GameDetailsSheet } from "./GameDetailsSheet";
 
 export const RostersContainer = () => {
-    const [selectedTab, setSelectedTab] = useState<TabId>('home');
+    const [selectedTab, setSelectedTab] = useState<TabId>('game');
   
     const handleTabChange = (tabId: TabId) => {
       setSelectedTab(tabId);
@@ -13,6 +14,7 @@ export const RostersContainer = () => {
     return (
       <Navbar className='subNavBar' fixedToTop>
         <Tabs id='Tabs' onChange={handleTabChange} selectedTabId={selectedTab} renderActiveTabPanelOnly fill>
+          <Tab id='game' title='Game' panel={<GameDetailsSheet />} />
           <Tab id='home' title='Home' panel={<RosterSheet teamType={TeamType.HOME} />} />
           <Tab id='away' title='Away' panel={<RosterSheet teamType={TeamType.AWAY} />} />
         </Tabs>

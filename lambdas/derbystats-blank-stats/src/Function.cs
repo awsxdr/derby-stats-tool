@@ -1,16 +1,14 @@
 using System.IO.Compression;
 using System.Net;
+using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using Amazon;
+using System.Text.Json.Nodes;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
-using Amazon.Runtime.Internal.Util;
 using Amazon.S3;
 using Amazon.S3.Model;
-using Microsoft.VisualBasic;
 
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
 
@@ -20,10 +18,32 @@ public class Function
 {
     public static async Task<APIGatewayProxyResponse> FunctionHandler(APIGatewayHttpApiV2ProxyRequest request) =>
         request.RequestContext.Http.Method switch {
-            "GET" => await GetBlankStatsBook(request),
+            "GET" when request.PathParameters?.ContainsKey("documentId") ?? false => await GetBlankStatsBook(request),
+            "GET" => await GetBlankStatsBookList(request),
             "POST" => await PutBlankStatsBook(request),
             _ => new APIGatewayProxyResponse { StatusCode = (int)HttpStatusCode.NotFound }
         };
+
+    private static async Task<APIGatewayProxyResponse> GetBlankStatsBookList(APIGatewayHttpApiV2ProxyRequest request)
+    {
+        if (!request.RequestContext.Authorizer.Jwt.Claims.TryGetValue("username", out var userId) || string.IsNullOrEmpty(userId))
+            return new APIGatewayProxyResponse { StatusCode = (int)HttpStatusCode.Forbidden };
+
+        var dbClient = new AmazonDynamoDBClient();
+        var response = await dbClient.GetItemAsync("derbystats-users", new() { ["user_id"] = new () { S = userId } });
+        
+        if (response.HttpStatusCode != HttpStatusCode.OK)
+            return new APIGatewayProxyResponse { StatusCode = (int)HttpStatusCode.NotFound };
+        
+        if (!response.Item.TryGetValue("blank_stats_book_filename", out var item))
+            return new APIGatewayProxyResponse { StatusCode = (int)HttpStatusCode.OK, Body = "[]" };
+
+        return new APIGatewayProxyResponse 
+        { 
+            StatusCode = (int)HttpStatusCode.OK, 
+            Body = JsonSerializer.Serialize(new[] { item.S }),
+        };
+    }
 
     private static async Task<APIGatewayProxyResponse> GetBlankStatsBook(APIGatewayHttpApiV2ProxyRequest request)
     {
@@ -62,9 +82,6 @@ public class Function
         if (!request.RequestContext.Authorizer.Jwt.Claims.TryGetValue("username", out var userId) || string.IsNullOrEmpty(userId))
             return new APIGatewayProxyResponse { StatusCode = (int)HttpStatusCode.Forbidden };
 
-        if (!request.IsBase64Encoded)
-            return new APIGatewayProxyResponse { StatusCode = (int)HttpStatusCode.BadRequest, Body = "Body expected to be base64 encoded" };
-
         if (!request.Headers.TryGetValue("content-length", out var contentLengthString))
             return new APIGatewayProxyResponse { StatusCode = (int)HttpStatusCode.LengthRequired };
 
@@ -77,7 +94,29 @@ public class Function
         if (contentLength > 10 * 1024 * 1024 /* 10MB */)
             return new APIGatewayProxyResponse { StatusCode = (int)HttpStatusCode.RequestEntityTooLarge };
 
-        var uploadedData = Convert.FromBase64String(request.Body);
+        var parsedData = JsonNode.Parse(request.IsBase64Encoded ? Encoding.UTF8.GetString(Convert.FromBase64String(request.Body)) : request.Body)?.AsObject();
+
+        if(parsedData == null)
+            return new APIGatewayProxyResponse { StatusCode = (int)HttpStatusCode.BadRequest, Body = "Body cannot be parsed" };
+
+        if(!parsedData.ContainsKey("filename") || !parsedData.ContainsKey("data"))
+            return new APIGatewayProxyResponse { StatusCode = (int)HttpStatusCode.BadRequest, Body = "Required fields missing from body" };
+
+        var filename = parsedData["filename"]?.AsValue().ToString();
+        var data = parsedData["data"]?.AsValue().ToString();
+
+        if(filename == null || data == null)
+            return new APIGatewayProxyResponse { StatusCode = (int)HttpStatusCode.BadRequest, Body = "Required fields missing from body" };
+
+        byte[] uploadedData;
+        try
+        {
+            uploadedData = Convert.FromBase64String(data);
+        }
+        catch(FormatException)
+        {
+            return new APIGatewayProxyResponse { StatusCode = (int)HttpStatusCode.BadRequest, Body = "Data is not valid base64" };
+        }
 
         var zipFilePath = Path.GetTempFileName();
         try
@@ -123,7 +162,9 @@ public class Function
             "derbystats-users", 
             new Dictionary<string, AttributeValue>() {
                 ["user_id"] = new() { S = userId },
+                ["document_id"] = new() { S = Guid.NewGuid().ToString() },
                 ["blank_stats_book_key"] = new() { S = key },
+                ["blank_stats_book_filename"] = new() { S = filename },
             });
 
         return new APIGatewayProxyResponse { StatusCode = (int)HttpStatusCode.OK };

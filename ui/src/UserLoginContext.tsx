@@ -146,6 +146,12 @@ export const UserLoginContextProvider = ({ children }: PropsWithChildren) => {
     }, [state, setAndStoreState]);
 
     const getToken = useCallback(async () => {
+        const search = new URLSearchParams(location.search);
+        if(search.has("code")) {
+            // We're in the middle of login, don't try to return a token
+            return "";
+        }
+
         if(state.currentToken) {
             if(Date.now() > state.expiryDate - 60000) {
                 if (state.refreshToken) {
@@ -167,7 +173,6 @@ export const UserLoginContextProvider = ({ children }: PropsWithChildren) => {
                 setAndStoreState(current => ({ ...current, currentToken: access_token, refreshToken: refresh_token, expiryDate }));
                 return access_token;
             } else {
-                setAndStoreState(() => DefaultLoginState());
                 return "";
             }
         }

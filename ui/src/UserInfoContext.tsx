@@ -1,4 +1,4 @@
-import { PropsWithChildren, createContext, useContext, useEffect, useState } from "react";
+import { PropsWithChildren, createContext, useCallback, useContext, useEffect, useState } from "react";
 import { useUserLoginContext } from "./UserLoginContext";
 
 type BlankStatsBookDetails = {
@@ -21,11 +21,41 @@ const UserInfoContext = createContext<UserInfoContextProps>({
 
 export const useUserInfoContext = () => useContext(UserInfoContext);
 
+type UserInfo = {
+    email: string,
+    username: string,
+};
+
 export const UserInfoContextProvider = ({ children }: PropsWithChildren) => {
 
     const [user, setUser] = useState<UserDetails>();
 
+    console.log(user);
+
     const { getToken, isUserLoggedIn } = useUserLoginContext();
+
+    const getUserData = useCallback(async () => {
+        const token = await getToken();
+
+        const userInfoResponse = await fetch('https://auth.awsxdr.com/oauth2/userInfo', {
+            method: 'GET',
+            headers: [
+                ['Authorization', `Bearer ${token}` ]
+            ]
+        });
+
+        if (!userInfoResponse.ok) {
+            return;
+        }
+
+        const info: UserInfo = await userInfoResponse.json();
+
+        setUser({
+            id: info.username,
+            email: info.email,
+            blankStatsbooks: []
+        });
+    }, [getToken, setUser]);
 
     useEffect(() => {
         if(!isUserLoggedIn) {
@@ -33,17 +63,8 @@ export const UserInfoContextProvider = ({ children }: PropsWithChildren) => {
             return;
         }
 
-        getToken().then(token => {
-            //if(token) { alert(token); }
-            // fetch('https://stats.awsxdr.com/api/user', {
-            //     method: 'GET',
-            //     headers: [
-            //         ['Authorization', `Bearer ${token}` ]
-            //     ]
-            // });
-        });
-
-    }, [isUserLoggedIn, setUser, getToken]);
+        getUserData();
+    }, [isUserLoggedIn, setUser, getUserData]);
 
     return (
         <UserInfoContext.Provider value={{ user }}>

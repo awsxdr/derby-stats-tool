@@ -1,0 +1,48 @@
+.backgroundImageContainerOuter {
+    width: 100vw;
+    max-width: 1400px;
+    margin: 0 auto;
+    overflow: visible;
+}
+
+.backgroundImageContainerInner {
+    position: relative;
+    float: right;
+    right: 50%;
+}
+
+.backgroundImage {
+    opacity: .5;
+    height: 100vh;
+    margin-top: 8vh;
+    position: relative;
+    right: -50%;
+}
+
+.backgroundContainer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    overflow: hidden;
+}
+
+.bodyContainer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20vh;
+}
+
+.bodyCard {
+    background-color: rgba(255, 255, 255, 0.4) !important;
+    max-width: 500px;
+    color: #666;
+}

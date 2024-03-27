@@ -11,6 +11,6 @@
   "function-runtime": "dotnet8",
   "function-memory-size": 512,
   "function-timeout": 30,
-  "function-handler": "derbystats-pdf-export::DerbyStatsExport.Function::FunctionHandler",
+  "function-handler": "derbystats-export::DerbyStatsExport.Function::FunctionHandler",
   "msbuild-parameters": "--self-contained true"
 }

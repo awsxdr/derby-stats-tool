@@ -1,0 +1,18 @@
+.scrollableTabBar {
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.subNavBar {
+    top: 50px !important;
+}
+
+.tableContainer {
+    position: absolute;
+    top: 120px;
+    bottom: 0;
+    overflow: auto;
+    height: calc(100vh - 150px);
+    right: 5px;
+    left: 5px;
+}

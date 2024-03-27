@@ -1,24 +1,48 @@
 import { Navbar, Tab, TabId, Tabs } from "@blueprintjs/core";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { RosterSheet } from "./RosterSheet";
 import { TeamType } from "./GameStateContext";
 import { GameDetailsSheet } from "./GameDetailsSheet";
+import sharedStyles from './Shared.module.css';
+import classNames from "classnames";
 
 export const RostersContainer = () => {
     const [selectedTab, setSelectedTab] = useState<TabId>('game');
-  
+    const [isTransitioning, setIsTransitioning] = useState(false);
+
     const handleTabChange = (tabId: TabId) => {
-      setSelectedTab(tabId);
+        setSelectedTab(tabId);
+        setIsTransitioning(true);
     }
-  
+
+    const body = useMemo(() => {
+        if(isTransitioning) {
+            setTimeout(() => setIsTransitioning(false), 0);
+            return (<></>);
+        }
+
+        switch(selectedTab) {
+            case 'game':
+                return (<GameDetailsSheet />);
+            case 'home':
+                return (<RosterSheet teamType={TeamType.AWAY} />);
+            case 'away':
+                return (<RosterSheet teamType={TeamType.HOME} />);
+        }
+    }, [selectedTab, isTransitioning, setIsTransitioning])
+
     return (
-      <Navbar className='subNavBar' fixedToTop>
-        <Tabs id='Tabs' onChange={handleTabChange} selectedTabId={selectedTab} renderActiveTabPanelOnly fill>
-          <Tab id='game' title='Game' panel={<GameDetailsSheet />} />
-          <Tab id='home' title='Home' panel={<RosterSheet teamType={TeamType.HOME} />} />
-          <Tab id='away' title='Away' panel={<RosterSheet teamType={TeamType.AWAY} />} />
-        </Tabs>
-      </Navbar>
-    )
-  }
-  
+        <>
+            <Navbar className={classNames(sharedStyles.subNavBar, sharedStyles.scrollableTabBar)} fixedToTop>
+                <Tabs id='Tabs' onChange={handleTabChange} selectedTabId={selectedTab} renderActiveTabPanelOnly fill>
+                    <Tab id='game' title='Game' />
+                    <Tab id='home' title='Home' />
+                    <Tab id='away' title='Away' />
+                </Tabs>
+            </Navbar>
+            <div className={sharedStyles.tableContainer}>
+                { body }
+            </div>
+        </>
+    );
+}

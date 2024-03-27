@@ -2,6 +2,8 @@ import { Navbar, Tab, TabId, Tabs } from "@blueprintjs/core";
 import { useCallback, useMemo, useState } from "react";
 import { ScoreSheet } from "./ScoreSheet";
 import { TeamType } from "./GameStateContext";
+import sharedStyles from './Shared.module.css';
+import classNames from "classnames";
 
 export const ScoreSheetsContainer = () => {
     const [selectedTab, setSelectedTab] = useState<TabId>('p1home');
@@ -32,7 +34,7 @@ export const ScoreSheetsContainer = () => {
 
     return (
         <>
-            <Navbar className='subNavBar' fixedToTop>
+            <Navbar className={classNames(sharedStyles.subNavBar, sharedStyles.scrollableTabBar)} fixedToTop>
                 <Tabs id='Tabs' onChange={handleTabChange} selectedTabId={selectedTab} renderActiveTabPanelOnly fill>
                     <Tab id='p1home' title='Period 1 (Home)' />
                     <Tab id='p1away' title='Period 1 (Away)' />
@@ -40,7 +42,7 @@ export const ScoreSheetsContainer = () => {
                     <Tab id='p2away' title='Period 2 (Away)' />
                 </Tabs>
             </Navbar>
-            <div className='tableContainer'>
+            <div className={sharedStyles.tableContainer}>
                 { body }
             </div>
         </>

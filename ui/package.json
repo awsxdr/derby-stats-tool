@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "deploy": "aws s3 cp --recursive ./dist/ s3://derby-stats-site/",
+    "invalidate-prod": "aws cloudfront create-invalidation --distribution-id E31XTSVDESTMA1 --paths \"/*\"",
+    "publish": "npm run build && npm run deploy && npm run invalidate-prod",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
@@ -15,9 +18,14 @@
     "@blueprintjs/select": "^5.1.3",
     "@blueprintjs/table": "^5.1.2",
     "classnames": "^2.5.1",
+    "js-base64": "^3.7.7",
+    "js-sha256": "^0.11.0",
     "moment": "^2.30.1",
     "react": "^18.2.0",
+    "react-cookie-consent": "^9.0.0",
     "react-dom": "^18.2.0",
+    "react-router": "^6.22.3",
+    "react-router-dom": "^6.22.3",
     "typescript-cookie": "^1.0.6"
   },
   "devDependencies": {

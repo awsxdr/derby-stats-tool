@@ -9,16 +9,3 @@
   transform: rotate(270deg);
 }
 
-.subNavBar {
-  top: 50px !important;
-}
-
-.tableContainer {
-  position: absolute;
-  top: 120px;
-  bottom: 0px;
-  overflow: auto;
-  height: calc(100vh - 140px);
-  width: 100%;
-  left: 0;
-}

@@ -72,8 +72,6 @@ export const PenaltySheet = ({ teamType, period }: PenaltySheetProps) => {
     const getRowTotal = useCallback((row: number) => {
         const rowTotal = (penalties[row] && penalties[row].filter(p => p.code.trim().length > 0).length) ?? 0;
 
-        console.log(`Row ${row} total: ${rowTotal}`);
-
         return rowTotal > 0 ? rowTotal.toString() : '';
     }, [penalties]);
 

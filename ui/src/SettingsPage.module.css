@@ -1,0 +1,11 @@
+.settingsBox {
+    margin: 40px auto;
+    max-width: 500px;
+}
+
+.reactiveControlGroup {
+    flex-direction: row;
+    @media screen and (max-width: 600px) {
+        flex-direction: column !important;
+    }
+}

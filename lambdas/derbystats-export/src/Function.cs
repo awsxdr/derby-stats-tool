@@ -2,6 +2,8 @@ using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Amazon;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using Amazon.S3;
@@ -20,14 +22,26 @@ public class Function
         S3Client = new AmazonS3Client();
     }
 
-    public static async Task<APIGatewayProxyResponse> FunctionHandler(APIGatewayProxyRequest request)
+    public static async Task<APIGatewayProxyResponse> FunctionHandler(APIGatewayHttpApiV2ProxyRequest request)
     {
+        if (!request.RequestContext.Authorizer.Jwt.Claims.TryGetValue("username", out var userId) || string.IsNullOrEmpty(userId))
+            return new APIGatewayProxyResponse { StatusCode = (int)HttpStatusCode.Forbidden };
+
+        var dbClient = new AmazonDynamoDBClient();
+        var response = await dbClient.GetItemAsync("derbystats-users", new() { ["user_id"] = new () { S = userId } });
+        
+        if (response.HttpStatusCode != HttpStatusCode.OK)
+            return new APIGatewayProxyResponse { StatusCode = (int)HttpStatusCode.NotFound, Body = "No blank stats configured" };
+
+        if (!response.Item.TryGetValue("blank_stats_book_key", out var key))
+            return new APIGatewayProxyResponse { StatusCode = (int)HttpStatusCode.NotFound, Body = "No blank stats configured" };
+
         var client = new AmazonS3Client(RegionEndpoint.GetBySystemName("eu-west-2"));
 
         using var getResponse = await client.GetObjectAsync(new GetObjectRequest 
         {
             BucketName = "derby-stats-blank-statsbooks",
-            Key = "wftda-statsbook-full-A4.xlsx",
+            Key = key.S,
         });
 
         using var memoryStream = new MemoryStream();

@@ -1,6 +1,5 @@
 import { sha256 } from "js-sha256";
 import { PropsWithChildren, createContext, useCallback, useContext, useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router";
 import { getCookie, setCookie } from 'typescript-cookie';
 import { Base64 } from 'js-base64';
 
@@ -13,19 +12,25 @@ export interface LoginState {
     expiryDate: number,
 }
 
+export enum LoginStatus {
+    LOGGED_OUT = 0,
+    LOGGED_IN = 1,
+    INDETERMINATE = 2,
+}
+
 export const DefaultLoginState = (): LoginState => ({
     expiryDate: 0,
 });
 
 interface UserLoginContextProps {
-    isUserLoggedIn: () => boolean,
+    getLoginStatus: () => LoginStatus,
     startLogin: () => void,
     logout: () => void,
     getToken: () => Promise<string>,
 }
 
 const UserLoginContext = createContext<UserLoginContextProps>({ 
-    isUserLoggedIn: () => false,
+    getLoginStatus: () => LoginStatus.INDETERMINATE,
     startLogin: () => {},
     logout: () => {},
     getToken: () => Promise.resolve(""),
@@ -109,9 +114,7 @@ const revokeTokens = async (refreshToken: string) => {
 
 export const UserLoginContextProvider = ({ children }: PropsWithChildren) => {
     const [state, setState] = useState(DefaultLoginState());
-
-    const location = useLocation();
-    const navigate = useNavigate();
+    const [loginStatus, setLoginStatus] = useState(LoginStatus.INDETERMINATE);
 
     const setAndStoreState = useCallback((newState: (current: LoginState) => LoginState) => {
         setState(current => {
@@ -128,6 +131,7 @@ export const UserLoginContextProvider = ({ children }: PropsWithChildren) => {
         const challenge = Base64.fromUint8Array(new Uint8Array(hash)).replace('+', '-').replace('/', '_').replace('=', '');
 
         setCookie("verifier", verifier);
+        setLoginStatus(LoginStatus.INDETERMINATE);
 
         const authUrl = `https://auth.awsxdr.com/authorize?client_id=${CLIENT_ID}&response_type=code&scope=email+openid&redirect_uri=${encodeURIComponent(getRedirectUri())}&code_challenge=${challenge}&code_challenge_method=S256`
 
@@ -139,6 +143,7 @@ export const UserLoginContextProvider = ({ children }: PropsWithChildren) => {
             revokeTokens(state.refreshToken);
         }
         setAndStoreState(() => DefaultLoginState());
+        setLoginStatus(LoginStatus.LOGGED_OUT);
 
         const logoutUrl = `https://auth.awsxdr.com/logout?client_id=${CLIENT_ID}&response_type=code&logout_uri=${encodeURIComponent(getRedirectUri())}`;
 
@@ -146,7 +151,7 @@ export const UserLoginContextProvider = ({ children }: PropsWithChildren) => {
     }, [state, setAndStoreState]);
 
     const getToken = useCallback(async () => {
-        const search = new URLSearchParams(location.search);
+        const search = new URLSearchParams(window.location.search);
         if(search.has("code")) {
             // We're in the middle of login, don't try to return a token
             return "";
@@ -181,17 +186,17 @@ export const UserLoginContextProvider = ({ children }: PropsWithChildren) => {
     useEffect(() => {
         const search = new URLSearchParams(location.search);
         if(search.has("code")) {
+            setLoginStatus(LoginStatus.INDETERMINATE);
             const code = search.get("code");
             if(code) {
                 getTokenFromCode(code).then(({ access_token, refresh_token, expires_in }) => {
                     const expiryDate = Date.now() + expires_in * 1000;
+                    setLoginStatus(LoginStatus.LOGGED_IN);
                     setAndStoreState(current => ({ ...current, currentToken: access_token, refreshToken: refresh_token, expiryDate }));
                 });
             }
-
-            navigate('/');
         }
-    }, [location.search, navigate, setAndStoreState]);
+    }, [setAndStoreState]);
 
     useEffect(() => {
         const storedLoginCookieValue = getCookie("user");
@@ -199,19 +204,27 @@ export const UserLoginContextProvider = ({ children }: PropsWithChildren) => {
         if(storedLoginCookieValue) {
             const storedLogin: LoginState = JSON.parse(storedLoginCookieValue);
 
+            if(storedLogin.currentToken) {
+                setLoginStatus(LoginStatus.LOGGED_IN);
+            } else {
+                setLoginStatus(LoginStatus.LOGGED_OUT);
+            }
+
             setState(storedLogin);
+        } else {
+            setLoginStatus(LoginStatus.LOGGED_OUT);
         }
 
-    }, [setState])
+    }, [setState]);
 
     return (
         <UserLoginContext.Provider value={{ 
-            isUserLoggedIn: useCallback(() => !!state.currentToken, [state]),
+            getLoginStatus: useCallback(() => loginStatus, [loginStatus]),
             startLogin,
             logout,
             getToken,
         }}>
-            {children}
+            {loginStatus !== LoginStatus.INDETERMINATE && children}
         </UserLoginContext.Provider>
     )
 }

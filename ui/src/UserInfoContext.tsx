@@ -1,5 +1,6 @@
 import { PropsWithChildren, createContext, useCallback, useContext, useEffect, useState } from "react";
-import { useUserLoginContext } from "./UserLoginContext";
+import { LoginStatus, useUserLoginContext } from "./UserLoginContext";
+import { useApiContext } from "./Api";
 
 type BlankStatsBookDetails = {
     filename: string,
@@ -30,9 +31,9 @@ export const UserInfoContextProvider = ({ children }: PropsWithChildren) => {
 
     const [user, setUser] = useState<UserDetails>();
 
-    console.log(user);
+    const { api } = useApiContext();
 
-    const { getToken, isUserLoggedIn } = useUserLoginContext();
+    const { getToken, getLoginStatus } = useUserLoginContext();
 
     const getUserData = useCallback(async () => {
         const token = await getToken();
@@ -53,22 +54,22 @@ export const UserInfoContextProvider = ({ children }: PropsWithChildren) => {
         setUser({
             id: info.username,
             email: info.email,
-            blankStatsbooks: []
+            blankStatsbooks: (await api?.getBlankStatsBooks() ?? []).map(s => ({ filename: s, id: '' })),
         });
-    }, [getToken, setUser]);
+    }, [getToken, setUser, api]);
 
     useEffect(() => {
-        if(!isUserLoggedIn) {
+        if(getLoginStatus() !== LoginStatus.LOGGED_IN) {
             setUser(undefined);
             return;
         }
 
         getUserData();
-    }, [isUserLoggedIn, setUser, getUserData]);
+    }, [getLoginStatus, setUser, getUserData]);
 
     return (
         <UserInfoContext.Provider value={{ user }}>
             {children}
         </UserInfoContext.Provider>
-    )
+    );
 }

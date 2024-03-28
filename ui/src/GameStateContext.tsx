@@ -90,7 +90,7 @@ export type GameDetails = {
     time: string,
 }
 
-interface GameState {
+export interface GameState {
     game: GameDetails,
     rosters: Rosters,
     scores: Scores,

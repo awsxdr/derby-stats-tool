@@ -1,4 +1,4 @@
-import { Alert, Alignment, Button, Intent, Menu, MenuItem, Navbar, Popover, Tab, TabId, Tabs, Tooltip } from '@blueprintjs/core'
+import { Alert, Alignment, Button, Intent, Menu, MenuDivider, MenuItem, Navbar, Popover, Tab, TabId, Tabs, Tooltip } from '@blueprintjs/core'
 import { useCallback, useState } from 'react';
 import { DefaultGameState, useGameContext } from './GameStateContext';
 import { RostersContainer } from './RostersContainer';
@@ -6,13 +6,21 @@ import { ScoreSheetsContainer } from './ScoreSheetsContainer';
 import { PenaltiesContainer } from './PenaltiesContainer';
 import { LineupContainer } from './LineupContainer';
 import { useUserLoginContext } from './UserLoginContext';
-import styles from './SheetEditor.module.css';
+import styles from './Shared.module.css';
+import { useUserInfoContext } from './UserInfoContext';
+import { useApiContext } from './Api';
+import { useNavigate } from 'react-router';
 
 export const SheetEditor = () => {
     const [selectedTab, setSelectedTab] = useState<TabId>('igrf');
     const [isConfirmNewOpen, setIsConfirmNewOpen] = useState(false);
+    const [isWarnNoBlankStatsOpen, setIsWarnNoBlankStatsOpen] = useState(false);
+
     const { gameState, setGameState } = useGameContext();
     const { logout } = useUserLoginContext();
+    const { user } = useUserInfoContext();
+    const { api } = useApiContext();
+    const navigate = useNavigate();
   
     const handleTabChange = (tabId: TabId) => {
       setSelectedTab(tabId);
@@ -28,26 +36,22 @@ export const SheetEditor = () => {
       setIsConfirmNewOpen(false);
     }, [setGameState, setIsConfirmNewOpen]);
 
-    const downloadFile = () => {
-        fetch('/api/export', { 
-            method: 'POST',
-            body: JSON.stringify(gameState),
-        }).then(response => {
-            response.blob().then(blob => {
-                const link = document.createElement('a');
-                link.href = window.URL.createObjectURL(blob);
-                link.download = 'stats.xlsx';
+    const closeWarnNoBlankStats = useCallback(() => setIsWarnNoBlankStatsOpen(false), [setIsWarnNoBlankStatsOpen]);
+    const openSettings = useCallback(() => navigate('/settings'), [navigate]);
 
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            })
-        })
-    }
+    const downloadFile = useCallback(() => {
+        if (user?.blankStatsbooks.length ?? 0 > 0) {
+            api?.exportStatsBook(gameState);
+        } else {
+            setIsWarnNoBlankStatsOpen(true);
+        }
+    }, [gameState, api, user, setIsWarnNoBlankStatsOpen]);
 
     const UserMenu = () => (
         <Menu>
-            <MenuItem text='Logout' onClick={logout} />
+            <MenuItem text='Settings' icon='cog' href='/settings' />
+            <MenuDivider />
+            <MenuItem text='Logout' icon='log-out' onClick={logout} />
         </Menu>
     );
 
@@ -66,14 +70,13 @@ export const SheetEditor = () => {
                         <Button intent='none' minimal icon='folder-open' disabled />
                     </Tooltip>
                     <Tooltip content="Download stats book" placement='bottom'>
-                        <Button intent='none' minimal icon='download' onClick={downloadFile} />
+                        <Button intent='none' minimal icon='download' onClick={downloadFile} disabled={!user} />
                     </Tooltip>
                     <Navbar.Divider />
                 </Navbar.Group>
                 <Navbar.Group align={Alignment.RIGHT}>
-                    <Button minimal icon='cog' />
                     <Popover content={<UserMenu />} placement='bottom-start'>
-                        <Button minimal icon='user' />
+                        <Button minimal icon='menu' />
                     </Popover>
                 </Navbar.Group>
                 <Tabs 
@@ -100,6 +103,17 @@ export const SheetEditor = () => {
                 onConfirm={handleConfirmNewConfirm}
             >
                 <p>Are you sure you wish to erase all data and start a new stats book?</p>
+            </Alert>
+            <Alert
+                cancelButtonText='Cancel'
+                confirmButtonText='Open Settings'
+                intent={Intent.WARNING}
+                isOpen={isWarnNoBlankStatsOpen}
+                onCancel={closeWarnNoBlankStats}
+                onConfirm={openSettings}
+            >
+                <p>No blank stats book has been configured. Please go to the settings screen to upload one.</p>
+                <p>Blank stats books can be <a href='https://community.wftda.org/resources/document-libraries/competition-documents#statsbook' target='_blank'>downloaded from WFTDA</a></p>
             </Alert>
         </>
     );

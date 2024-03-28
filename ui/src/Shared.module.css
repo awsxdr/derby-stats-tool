@@ -16,3 +16,10 @@
     right: 5px;
     left: 5px;
 }
+
+.logo {
+    display: auto;
+    @media screen and (max-width: 600px) {
+        display: none !important;
+    }
+}

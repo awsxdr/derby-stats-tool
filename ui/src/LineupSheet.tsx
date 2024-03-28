@@ -22,6 +22,7 @@ export const LineupSheet = ({ teamType, period }: LineupSheetProps) => {
     const { gameState, setGameState } = useGameContext();
 
     const lineups = useMemo(() => gameState.lineups[period][teamType], [gameState, period, teamType]);
+    const scores = useMemo(() => gameState.scores[period][teamType], [gameState, period, teamType]);
 
     const renderAlternatingColorCell = (cellRenderer: CellRendererFn, lightColor: string, darkColor: string) =>
         (rowIndex: number) => cellRenderer(rowIndex % 2 == 0 ? lightColor : darkColor)(rowIndex);
@@ -60,7 +61,7 @@ export const LineupSheet = ({ teamType, period }: LineupSheetProps) => {
     const renderJamNumberCell = (color: string) => (rowIndex: number) => (
         <EditableCell2
             style={{ backgroundColor: color }}
-            value={lineups[rowIndex]?.jamNumber}
+            value={scores[rowIndex]?.jam}
             onConfirm={handleChange<string>((l, v) => l.jamNumber = v)(rowIndex)}
         />
     );

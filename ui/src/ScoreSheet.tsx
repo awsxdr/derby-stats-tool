@@ -1,5 +1,5 @@
-import { Column, ColumnHeaderCell, EditableCell2, RenderMode, Table2 } from '@blueprintjs/table'
-import { ReactElement, useMemo } from 'react';
+import { Cell, Column, ColumnHeaderCell, EditableCell2, RenderMode, Table2 } from '@blueprintjs/table'
+import { ReactElement, useCallback, useMemo } from 'react';
 import styles from './ScoreSheet.module.css';
 import { ToggleCell } from './ToggleCell';
 import { LineupLine, Period, ScoreLine, TeamType, useGameContext } from './GameStateContext';
@@ -17,11 +17,28 @@ interface ScoreSheetProps {
     period: Period,
 }
 
+const getTripValue = (trip: string) =>
+    parseInt(trip) || 0;
+
 export const ScoreSheet = ({ teamType, period }: ScoreSheetProps) => {
     const { gameState, setGameState } = useGameContext();
 
     const scores = useMemo(() => gameState.scores[period][teamType], [gameState, teamType, period]);
     const lineups = useMemo(() => gameState.lineups[period][teamType], [gameState, period, teamType]);
+    
+    const calculatePeriodTotal = useCallback((period: Period) =>
+        gameState.scores[period][teamType].reduce((p, j) => p + j.trips.reduce((p, t) => p + getTripValue(t), 0), 0),
+        [gameState, teamType]);
+
+    const previousPeriodTotal = useMemo(() => period == Period.TWO ? calculatePeriodTotal(Period.ONE) : 0, [calculatePeriodTotal, period]);
+
+    const calculateJamTotal = useCallback((row: number) =>
+        scores.length > row && scores[row]?.trips.reduce((p, c) => p + getTripValue(c), 0) || 0,
+        [scores]);
+    
+    const calculateGameTotal = useCallback((row: number) =>
+        Array.from({ length: row + 1 }).map((_, r) => calculateJamTotal(r)).reduce((p, c) => p + c, previousPeriodTotal),
+        [scores]);
 
     const renderAlternatingColorCell = (cellRenderer: CellRendererFn, lightColor: string, darkColor: string) =>
         (rowIndex: number) => cellRenderer(rowIndex % 2 == 0 ? lightColor : darkColor)(rowIndex);
@@ -150,19 +167,15 @@ export const ScoreSheet = ({ teamType, period }: ScoreSheetProps) => {
     );
 
     const renderJamTotalCell = (color: string) => (rowIndex: number) => (
-        <EditableCell2
-            style={{ backgroundColor: color }}
-            value={scores[rowIndex]?.jamTotal}
-            onConfirm={handleChange<string>((l, _, v) => l.jamTotal = v)(rowIndex)}
-        />
+        <Cell style={{ backgroundColor: color }}>
+            { scores[rowIndex]?.jam && calculateJamTotal(rowIndex) }
+        </Cell>
     );
 
     const renderGameTotalCell = (color: string) => (rowIndex: number) => (
-        <EditableCell2
-            style={{ backgroundColor: color }}
-            value={scores[rowIndex]?.gameTotal}
-            onConfirm={handleChange<string>((l, _, v) => l.gameTotal = v)(rowIndex)}
-        />
+        <Cell style={{ backgroundColor: color }}>
+            { scores[rowIndex]?.jam && calculateGameTotal(rowIndex) }
+        </Cell>
     );
   
     const renderHorizontalHeader = (name: string) => () => (
@@ -188,7 +201,7 @@ export const ScoreSheet = ({ teamType, period }: ScoreSheetProps) => {
           enableFocusedCell={true}
           enableGhostCells={false}
           columnWidths={[40, 100, 20, 20, 20, 20, 20, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60]}
-          renderMode={RenderMode.BATCH_ON_UPDATE}
+          renderMode={RenderMode.NONE}
         >
           <Column columnHeaderCellRenderer={renderHorizontalHeader("Jam")} cellRenderer={renderAlternatingColorCell(renderJamNumberCell, LightGreen, DarkGreen)} />
           <Column columnHeaderCellRenderer={renderHorizontalHeader("Jammer's number")} cellRenderer={renderAlternatingColorCell(renderJammerNumberCell, White, LightGreen)} />

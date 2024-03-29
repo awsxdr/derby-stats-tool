@@ -23,11 +23,11 @@ const getTripValue = (trip: string) =>
 export const ScoreSheet = ({ teamType, period }: ScoreSheetProps) => {
     const { gameState, setGameState } = useGameContext();
 
-    const scores = useMemo(() => gameState.scores[period][teamType], [gameState, teamType, period]);
-    const lineups = useMemo(() => gameState.lineups[period][teamType], [gameState, period, teamType]);
+    const scores = useMemo(() => gameState.scores[period][teamType].lines, [gameState, teamType, period]);
+    const lineups = useMemo(() => gameState.lineups[period][teamType].lines, [gameState, period, teamType]);
     
     const calculatePeriodTotal = useCallback((period: Period) =>
-        gameState.scores[period][teamType].reduce((p, j) => p + j.trips.reduce((p, t) => p + getTripValue(t), 0), 0),
+        gameState.scores[period][teamType].lines.reduce((p, j) => p + j.trips.reduce((p, t) => p + getTripValue(t), 0), 0),
         [gameState, teamType]);
 
     const previousPeriodTotal = useMemo(() => period == Period.TWO ? calculatePeriodTotal(Period.ONE) : 0, [calculatePeriodTotal, period]);

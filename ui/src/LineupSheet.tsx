@@ -21,8 +21,8 @@ interface LineupSheetProps {
 export const LineupSheet = ({ teamType, period }: LineupSheetProps) => {
     const { gameState, setGameState } = useGameContext();
 
-    const lineups = useMemo(() => gameState.lineups[period][teamType], [gameState, period, teamType]);
-    const scores = useMemo(() => gameState.scores[period][teamType], [gameState, period, teamType]);
+    const lineups = useMemo(() => gameState.lineups[period][teamType].lines, [gameState, period, teamType]);
+    const scores = useMemo(() => gameState.scores[period][teamType].lines, [gameState, period, teamType]);
 
     const renderAlternatingColorCell = (cellRenderer: CellRendererFn, lightColor: string, darkColor: string) =>
         (rowIndex: number) => cellRenderer(rowIndex % 2 == 0 ? lightColor : darkColor)(rowIndex);

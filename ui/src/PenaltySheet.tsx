@@ -21,7 +21,7 @@ export const PenaltySheet = ({ teamType, period }: PenaltySheetProps) => {
     const { gameState, setGameState } = useGameContext();
 
     const roster = useMemo(() => gameState.rosters[teamType], [gameState, teamType]);
-    const penalties = useMemo(() => gameState.penalties[period][teamType], [gameState, teamType, period]);
+    const penalties = useMemo(() => gameState.penalties[period][teamType].lines, [gameState, teamType, period]);
 
     const DEFAULT_PENALTY_LINE: () => PenaltyLine = () => Array.from({ length: 10 }, () => ({ code: '', jam: ''}));
 

@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "derbystats-export", "lambda
 EndProject
 Project("{C4CB9020-DB4B-46BB-A74E-097EFBDD258F}") = "derbystats-blank-stats", "lambdas\derbystats-blank-stats\src\derbystats-blank-stats.csproj", "{83D1C0D7-D3C9-4FBB-A6F6-ABF45AA97F8F}"
 EndProject
+Project("{CA24A5E0-9AFF-4144-8C1B-E4EEC1A861D9}") = "derbystats-documents", "lambdas\derbystats-documents\src\derbystats-documents.csproj", "{570C8AC2-2FF2-4540-9131-912C7FD4EE22}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{83D1C0D7-D3C9-4FBB-A6F6-ABF45AA97F8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{83D1C0D7-D3C9-4FBB-A6F6-ABF45AA97F8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{83D1C0D7-D3C9-4FBB-A6F6-ABF45AA97F8F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{570C8AC2-2FF2-4540-9131-912C7FD4EE22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{570C8AC2-2FF2-4540-9131-912C7FD4EE22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{570C8AC2-2FF2-4540-9131-912C7FD4EE22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{570C8AC2-2FF2-4540-9131-912C7FD4EE22}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

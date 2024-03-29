@@ -24,7 +24,7 @@ export const HomePage = () => {
             path: '/settings',
             loader: () => getLoginStatus() === LoginStatus.LOGGED_IN ? null : redirect("/"),
             element: <SettingsPage />
-        }
+        },
     ]);
 
     return (

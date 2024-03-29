@@ -1,0 +1,17 @@
+.officialsContainer {
+    margin: auto;
+    padding: 10px;
+    max-width: 700px;
+}
+
+.officialItem {
+    @media screen and (max-width: 600px) {
+        flex-direction: column !important;
+    }
+}
+
+.officialItem label {
+    /* width: 50px;
+    text-align: right; */
+    text-align: left;
+}

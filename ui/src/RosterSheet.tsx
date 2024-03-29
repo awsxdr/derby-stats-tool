@@ -42,6 +42,16 @@ export const RosterSheet = ({ teamType }: RosterSheetProps) => {
         setGameState({ ...gameState, rosters: { ...gameState.rosters, [teamType]: roster }});
     }
 
+    const setCaptainSkateName = (name: string) => {
+        roster.captainSkateName = name;
+        setGameState({ ...gameState, rosters: { ...gameState.rosters, [teamType]: roster }});
+    }
+
+    const setCaptainLegalName = (name: string) => {
+        roster.captainLegalName = name;
+        setGameState({ ...gameState, rosters: { ...gameState.rosters, [teamType]: roster }});
+    }
+
     const setLeague = (league: string) => {
         roster.league = league;
         setGameState({ ...gameState, rosters: { ...gameState.rosters, [teamType]: roster }});
@@ -92,6 +102,12 @@ export const RosterSheet = ({ teamType }: RosterSheetProps) => {
                 </FormGroup>
                 <FormGroup label="Color" labelFor='color-input'>
                     <InputGroup id='league-input' fill value={roster.color} onValueChange={setColor} />
+                </FormGroup>
+                <FormGroup label="Captain skate name" labelFor='captain-skate-name'>
+                    <InputGroup id='league-input' fill value={roster.captainSkateName} onValueChange={setCaptainSkateName} />
+                </FormGroup>
+                <FormGroup label="Captain legal name" labelFor='captain-skate-name'>
+                    <InputGroup id='league-input' fill value={roster.captainLegalName} onValueChange={setCaptainLegalName} />
                 </FormGroup>
             </div>
             <div className={styles.rosterTable}>

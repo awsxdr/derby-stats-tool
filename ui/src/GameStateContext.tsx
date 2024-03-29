@@ -1,6 +1,6 @@
 import { PropsWithChildren, createContext, useCallback, useContext, useEffect, useState } from "react";
-import { getCookie, setCookie } from 'typescript-cookie';
 import moment from 'moment';
+import { useApiContext } from "./Api";
 
 export enum TeamType {
     HOME = 'home',
@@ -21,6 +21,8 @@ type TeamRoster = {
     league: string,
     team: string,
     color: string,
+    captainSkateName: string,
+    captainLegalName: string,
     skaters: Skater[],
 };
 
@@ -39,7 +41,17 @@ export type ScoreLine = {
     gameTotal: string,
 }
 
-type ScoreLines = ScoreLine[];
+type ScoreLines = {
+    scorekeeper: string,
+    jammerRef: string,
+    lines: ScoreLine[],
+}
+
+const DEFAULT_SCORE_LINES: ScoreLines = {
+    scorekeeper: '',
+    jammerRef: '',
+    lines: [],
+};
 
 type PeriodScores = { [team in TeamType]: ScoreLines };
 type Scores = { [period in Period]: PeriodScores };
@@ -50,7 +62,17 @@ export type Penalty = {
 }
 
 export type PenaltyLine = Penalty[];
-type PenaltyLines = PenaltyLine[];
+
+type PenaltyLines = {
+    penaltyTracker: string,
+    lines: PenaltyLine[],
+};
+
+const DEFAULT_PENALTY_LINES: PenaltyLines = {
+    penaltyTracker: '',
+    lines: [],
+};
+
 type PeriodPenalties = { [team in TeamType]: PenaltyLines };
 type Penalties = { [period in Period]: PeriodPenalties };
 
@@ -75,7 +97,16 @@ export type LineupLine = {
     noPivot: boolean,
 };
 
-type LineupLines = LineupLine[];
+type LineupLines = {
+    lineupTracker: string,
+    lines: LineupLine[],
+};
+
+const DEFAULT_LINEUP_LINES: LineupLines = {
+    lineupTracker: '',
+    lines: [],
+};
+
 type PeriodLineups = { [team in TeamType]: LineupLines };
 type Lineups = { [period in Period]: PeriodLineups };
 
@@ -90,8 +121,16 @@ export type GameDetails = {
     time: string,
 }
 
+export type Official = {
+    role: string,
+    name: string,
+}
+
+type Officials = Official[];
+
 export interface GameState {
     game: GameDetails,
+    officials: Officials,
     rosters: Rosters,
     scores: Scores,
     penalties: Penalties,
@@ -109,54 +148,81 @@ export const DefaultGameState = (): GameState => ({
         date: moment(Date.now()).format("YYYY-MM-DD"), 
         time: moment(Date.now()).format("HH:mm"), 
     },
+    officials: [],
     rosters: {
-        home: { league: '', team: '', color: '', skaters: [] },
-        away: { league: '', team: '', color: '', skaters: [] },
+        home: { league: '', team: '', color: '', captainSkateName: '', captainLegalName: '', skaters: [] },
+        away: { league: '', team: '', color: '', captainSkateName: '', captainLegalName: '', skaters: [] },
     },
     scores: {
-        1: { home: [], away: [] },
-        2: { home: [], away: [] },
+        1: { home: DEFAULT_SCORE_LINES, away: DEFAULT_SCORE_LINES },
+        2: { home: DEFAULT_SCORE_LINES, away: DEFAULT_SCORE_LINES },
     },
     penalties: {
-        1: { home: [], away: [] },
-        2: { home: [], away: [] },
+        1: { home: DEFAULT_PENALTY_LINES, away: DEFAULT_PENALTY_LINES },
+        2: { home: DEFAULT_PENALTY_LINES, away: DEFAULT_PENALTY_LINES },
     },
     lineups: {
-        1: { home: [], away: [] },
-        2: { home: [], away: [] },
+        1: { home: DEFAULT_LINEUP_LINES, away: DEFAULT_LINEUP_LINES },
+        2: { home: DEFAULT_LINEUP_LINES, away: DEFAULT_LINEUP_LINES },
     },
 })
 
 interface GameStateContextProps {
     gameState: GameState,
+    isLoading: boolean,
+    isDirty: boolean,
     setGameState: (state: GameState) => void,
 }
 
-const GameContext = createContext<GameStateContextProps>({ gameState: DefaultGameState(), setGameState: () => {} });
+const GameContext = createContext<GameStateContextProps>({ 
+    gameState: DefaultGameState(),
+    setGameState: () => {},
+    isLoading: true,
+    isDirty: false
+ });
 
 export const useGameContext = () => useContext(GameContext);
 
 export const GameStateContextProvider = ({ children }: PropsWithChildren) => {
     const [state, setState] = useState(DefaultGameState());
+    const [isLoading, setIsLoading] = useState(true);
+    const [isDirty, setIsDirty] = useState(false);
+    const { api } = useApiContext();
 
     useEffect(() => {
-        const storedGameCookieValue = getCookie("current-game");
+        api?.getDocument().then(game => {
+            setState(game);
+            setIsLoading(false);
+            setIsDirty(false);
+        })
+        .catch(() => {
+            setState(DefaultGameState());
+            setIsLoading(false);
+            setIsDirty(false);
+        });
+    }, [setState, setIsLoading, setIsDirty, api]);
 
-        if(storedGameCookieValue) {
-            const storedGame: GameState = JSON.parse(storedGameCookieValue);
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (isDirty) {
+                console.log('Write changes');
+                console.log(JSON.stringify(state));
+                api?.setDocument(state).then(() => {
+                    setIsDirty(false);
+                });
+            }
+        }, 5000);
 
-            setState(storedGame);
-        }
-
-    }, [setState])
+        return () => clearInterval(interval);
+    }, [isDirty, setIsDirty, api, state]);
 
     const setAndStoreState = useCallback((state: GameState) => {
         setState(state);
-        setCookie("current-game", JSON.stringify(state));
-    }, [setState]);
+        setIsDirty(true);
+    }, [setState, setIsDirty]);
 
     return (
-        <GameContext.Provider value={{ gameState: state, setGameState: setAndStoreState }}>
+        <GameContext.Provider value={{ gameState: state, setGameState: setAndStoreState, isLoading, isDirty }}>
             {children}
         </GameContext.Provider>
     )

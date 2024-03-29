@@ -5,6 +5,7 @@ import { TeamType } from "./GameStateContext";
 import { GameDetailsSheet } from "./GameDetailsSheet";
 import sharedStyles from './Shared.module.css';
 import classNames from "classnames";
+import { OfficialsRosterSheet } from "./OfficialsRosterSheet";
 
 export const RostersContainer = () => {
     const [selectedTab, setSelectedTab] = useState<TabId>('game');
@@ -24,10 +25,12 @@ export const RostersContainer = () => {
         switch(selectedTab) {
             case 'game':
                 return (<GameDetailsSheet />);
+            case 'officials':
+                return (<OfficialsRosterSheet />);
             case 'home':
-                return (<RosterSheet teamType={TeamType.AWAY} />);
-            case 'away':
                 return (<RosterSheet teamType={TeamType.HOME} />);
+            case 'away':
+                return (<RosterSheet teamType={TeamType.AWAY} />);
         }
     }, [selectedTab, isTransitioning, setIsTransitioning])
 
@@ -38,6 +41,7 @@ export const RostersContainer = () => {
                     <Tab id='game' title='Game' />
                     <Tab id='home' title='Home' />
                     <Tab id='away' title='Away' />
+                    <Tab id='officials' title='Officials' />
                 </Tabs>
             </Navbar>
             <div className={sharedStyles.tableContainer}>

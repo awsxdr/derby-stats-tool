@@ -1,9 +1,7 @@
 using System.Net;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Amazon;
 using Amazon.DynamoDBv2;
-using Amazon.DynamoDBv2.Model;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using Amazon.S3;

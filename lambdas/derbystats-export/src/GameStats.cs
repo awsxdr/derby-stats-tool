@@ -5,6 +5,7 @@ namespace DerbyStatsExport;
 public class GameStats
 {
     [JsonPropertyName("game")] public GameDetails Game { get; set; }
+	[JsonPropertyName("officials")] public Official[] Officials { get; set; }
 	[JsonPropertyName("rosters")] public Rosters Rosters { get; set; }
 	[JsonPropertyName("scores")] public Scores Scores { get; set; }
 	[JsonPropertyName("penalties")] public Penalties Penalties { get; set; }
@@ -31,8 +32,14 @@ public class Lineups
 
 public class PeriodLineups
 {
-	[JsonPropertyName("home")] public LineupLine[] HomeLineups { get; set; }
-	[JsonPropertyName("away")] public LineupLine[] AwayLineups { get; set; }
+	[JsonPropertyName("home")] public TeamPeriodLineups HomeLineups { get; set; }
+	[JsonPropertyName("away")] public TeamPeriodLineups AwayLineups { get; set; }
+}
+
+public class TeamPeriodLineups
+{
+	[JsonPropertyName("lineupTracker")] public string LineupTracker { get; set; }
+	[JsonPropertyName("lines")] public LineupLine[] Lines { get; set; }
 }
 
 public class LineupLine
@@ -65,8 +72,14 @@ public class Penalties
 
 public class PeriodPenalties
 {
-	[JsonPropertyName("home")] public Penalty[][] HomePenalties { get; set; }
-	[JsonPropertyName("away")] public Penalty[][] AwayPenalties { get; set; }
+	[JsonPropertyName("home")] public TeamPeriodPenalties HomePenalties { get; set; }
+	[JsonPropertyName("away")] public TeamPeriodPenalties AwayPenalties { get; set; }
+}
+
+public class TeamPeriodPenalties
+{
+	[JsonPropertyName("penaltyTracker")] public string PenaltyTracker { get; set; }
+	[JsonPropertyName("lines")] public Penalty[][] Lines { get; set; }
 }
 
 public class Penalty
@@ -83,8 +96,15 @@ public class Scores
 
 public class PeriodScores
 {
-	[JsonPropertyName("home")] public ScoreLine[] HomeScores { get; set; }
-	[JsonPropertyName("away")] public ScoreLine[] AwayScores { get; set; }
+	[JsonPropertyName("home")] public TeamPeriodScores HomeScores { get; set; }
+	[JsonPropertyName("away")] public TeamPeriodScores AwayScores { get; set; }
+}
+
+public class TeamPeriodScores
+{
+	[JsonPropertyName("scorekeeper")] public string Scorekeeper { get; set; }
+	[JsonPropertyName("jammerRef")] public string JammerRef { get; set; }
+	[JsonPropertyName("lines")] public ScoreLine[] Lines { get; set; }
 }
 
 public class ScoreLine
@@ -101,6 +121,12 @@ public class ScoreLine
 	[JsonPropertyName("gameTotal")] public string GameTotal { get; set; }
 }
 
+public class Official
+{
+	[JsonPropertyName("role")] public string Role { get; set; }
+	[JsonPropertyName("name")] public string Name { get; set; }
+}
+
 public class Rosters
 {
     [JsonPropertyName("home")] public TeamRoster HomeTeamRoster { get; set; }
@@ -112,6 +138,8 @@ public class TeamRoster
     [JsonPropertyName("league")] public string League { get; set; }
     [JsonPropertyName("team")] public string Team { get; set; }
     [JsonPropertyName("color")] public string Color { get; set; }
+	[JsonPropertyName("captainSkateName")] public string CaptainSkateName { get; set;}
+	[JsonPropertyName("captainLegalName")] public string CaptainLegalName { get; set;}
     [JsonPropertyName("skaters")] public Skater[] Skaters { get; set; }
 }
 

@@ -101,10 +101,12 @@ export class ToggleCell extends React.Component<ToggleCellProps, ToggleCellState
         }
     }
 
-    private handleKeyPress = () => {
+    private handleKeyPress = (e: React.KeyboardEvent) => {
         if (!this.props.isFocused) {
             return;
         }
+        e.preventDefault();
+        e.bubbles = false;
 
         this.setState({ value: !this.state.value });
     };

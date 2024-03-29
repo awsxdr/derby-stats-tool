@@ -4,6 +4,7 @@ import { ScoreSheet } from "./ScoreSheet";
 import { TeamType } from "./GameStateContext";
 import sharedStyles from './Shared.module.css';
 import classNames from "classnames";
+import { ScoreOfficialsSheet } from "./ScoreOfficialsSheet";
 
 export const ScoreSheetsContainer = () => {
     const [selectedTab, setSelectedTab] = useState<TabId>('p1home');
@@ -29,6 +30,8 @@ export const ScoreSheetsContainer = () => {
                 return (<ScoreSheet teamType={TeamType.HOME} period={2} />);
             case 'p2away':
                 return (<ScoreSheet teamType={TeamType.AWAY} period={2} />);
+            case 'officials':
+                return (<ScoreOfficialsSheet />);
         }
     }, [selectedTab, isTransitioning, setIsTransitioning])
 
@@ -40,6 +43,7 @@ export const ScoreSheetsContainer = () => {
                     <Tab id='p1away' title='Period 1 (Away)' />
                     <Tab id='p2home' title='Period 2 (Home)' />
                     <Tab id='p2away' title='Period 2 (Away)' />
+                    <Tab id='officials' title='Officials' />
                 </Tabs>
             </Navbar>
             <div className={sharedStyles.tableContainer}>

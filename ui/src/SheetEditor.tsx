@@ -10,13 +10,14 @@ import styles from './Shared.module.css';
 import { useUserInfoContext } from './UserInfoContext';
 import { useApiContext } from './Api';
 import { useNavigate } from 'react-router';
+import { Footer } from './Footer';
 
 export const SheetEditor = () => {
     const [selectedTab, setSelectedTab] = useState<TabId>('igrf');
     const [isConfirmNewOpen, setIsConfirmNewOpen] = useState(false);
     const [isWarnNoBlankStatsOpen, setIsWarnNoBlankStatsOpen] = useState(false);
 
-    const { gameState, setGameState } = useGameContext();
+    const { gameState, setGameState, isLoading } = useGameContext();
     const { logout } = useUserLoginContext();
     const { user } = useUserInfoContext();
     const { api } = useApiContext();
@@ -79,21 +80,24 @@ export const SheetEditor = () => {
                         <Button minimal icon='menu' />
                     </Popover>
                 </Navbar.Group>
-                <Tabs 
-                    id='MainTabs' 
-                    onChange={handleTabChange} 
-                    selectedTabId={selectedTab} 
-                    className={styles.scrollableTabBar} 
-                    renderActiveTabPanelOnly 
-                    large 
-                    fill
-                >
-                    <Tab id='igrf' title='IGRF' panel={<RostersContainer />} />
-                    <Tab id='score' title='Score' panel={<ScoreSheetsContainer />} />
-                    <Tab id='penalties' title='Penalties' panel={<PenaltiesContainer />} />
-                    <Tab id='lineup' title='Lineups' panel={<LineupContainer />} />
-                </Tabs>
+                { !isLoading &&
+                    <Tabs 
+                        id='MainTabs' 
+                        onChange={handleTabChange} 
+                        selectedTabId={selectedTab} 
+                        className={styles.scrollableTabBar} 
+                        renderActiveTabPanelOnly 
+                        large 
+                        fill
+                    >
+                        <Tab id='igrf' title='IGRF' panel={<RostersContainer />} />
+                        <Tab id='score' title='Score' panel={<ScoreSheetsContainer />} />
+                        <Tab id='penalties' title='Penalties' panel={<PenaltiesContainer />} />
+                        <Tab id='lineup' title='Lineups' panel={<LineupContainer />} />
+                    </Tabs>
+                }
             </Navbar>
+            <Footer />
             <Alert
                 cancelButtonText='Cancel'
                 confirmButtonText='Erase'

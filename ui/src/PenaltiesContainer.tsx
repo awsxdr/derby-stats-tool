@@ -4,6 +4,7 @@ import { PenaltySheet } from "./PenaltySheet";
 import { TeamType } from "./GameStateContext";
 import sharedStyles from './Shared.module.css';
 import classNames from "classnames";
+import { PenaltyOfficialsSheet } from "./PenaltyOfficialsSheet";
 
 export const PenaltiesContainer = () => {
     const [selectedTab, setSelectedTab] = useState<TabId>('p1home');
@@ -29,6 +30,8 @@ export const PenaltiesContainer = () => {
                 return (<PenaltySheet teamType={TeamType.HOME} period={2} />);
             case 'p2away':
                 return (<PenaltySheet teamType={TeamType.AWAY} period={2} />);
+            case 'officials':
+                return (<PenaltyOfficialsSheet />);
         }
     }, [selectedTab, isTransitioning, setIsTransitioning])
 
@@ -40,6 +43,7 @@ export const PenaltiesContainer = () => {
                     <Tab id='p1away' title='Period 1 (Away)' />
                     <Tab id='p2home' title='Period 2 (Home)' />
                     <Tab id='p2away' title='Period 2 (Away)' />
+                    <Tab id='officials' title='Officials' />
                 </Tabs>
             </Navbar>
             <div className={sharedStyles.tableContainer}>

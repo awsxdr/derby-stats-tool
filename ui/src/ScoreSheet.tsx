@@ -83,13 +83,13 @@ export const ScoreSheet = ({ teamType, period }: ScoreSheetProps) => {
         }
     }
 
-    const updateGameState = () => {
+    const updateGameState = useCallback(() => {
         setGameState({ 
             ...gameState, 
-            scores: { ...gameState.scores, [period]: { ...gameState.scores[period], [teamType]: scores }},
-            lineups: { ...gameState.lineups, [period]: { ...gameState.lineups[period], [teamType]: lineups }},
+            scores: { ...gameState.scores, [period]: { ...gameState.scores[period], [teamType]: { ...gameState.scores[period][teamType], lines: scores }}},
+            lineups: { ...gameState.lineups, [period]: { ...gameState.lineups[period], [teamType]: { ...gameState.scores[period][teamType], lines: lineups }}},
         });
-    }
+    }, [gameState, setGameState]);
 
     const handleChange = <T,>(setter: (scoreLine: ScoreLine, lineupLine: LineupLine, value: T) => void) => (rowIndex: number) => (value: T) => {
         createScoreLineIfMissing(rowIndex);

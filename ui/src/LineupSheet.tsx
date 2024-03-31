@@ -49,7 +49,19 @@ export const LineupSheet = ({ teamType, period }: LineupSheetProps) => {
     }
 
     const updateLineups = () => {
-        setGameState({ ...gameState, lineups: { ...gameState.lineups, [period]: { ...gameState.lineups[period], [teamType]: lineups }}});
+        setGameState({ 
+            ...gameState, 
+            lineups: { 
+                ...gameState.lineups, 
+                [period]: { 
+                    ...gameState.lineups[period], 
+                    [teamType]: {
+                        ...gameState.lineups[period][teamType],
+                        lines: lineups 
+                    }
+                }
+            }
+        });
     }
 
     const handleChange = <T,>(setter: (line: LineupLine, value: T)=> void) => (rowIndex: number) => (value: T) => {
@@ -59,11 +71,9 @@ export const LineupSheet = ({ teamType, period }: LineupSheetProps) => {
     }
 
     const renderJamNumberCell = (color: string) => (rowIndex: number) => (
-        <EditableCell2
-            style={{ backgroundColor: color }}
-            value={scores[rowIndex]?.jam}
-            onConfirm={handleChange<string>((l, v) => l.jamNumber = v)(rowIndex)}
-        />
+        <Cell style={{ backgroundColor: color }}>
+            { scores[rowIndex]?.jam }
+        </Cell>
     );
 
     const renderNoPivotCell = (color: string) => (rowIndex: number) => (

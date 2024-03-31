@@ -32,7 +32,19 @@ export const PenaltySheet = ({ teamType, period }: PenaltySheetProps) => {
     }
 
     const updatePenalties = () => {
-        setGameState({ ...gameState, penalties: { ...gameState.penalties, [period]: { ...gameState.penalties[period], [teamType]: penalties }}});
+        setGameState({ 
+            ...gameState, 
+            penalties: { 
+                ...gameState.penalties, 
+                [period]: { 
+                    ...gameState.penalties[period], 
+                    [teamType]: {
+                        ...gameState.penalties[period][teamType],
+                        lines: penalties,
+                    }
+                }
+            }
+        });
     }
 
     const handleChange = <T,>(row: number, column: number, setter: (line: Penalty, value: T) => void) => (value: T) => {

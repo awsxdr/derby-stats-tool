@@ -37,6 +37,8 @@ public static class StatsBookModifier
 		SetRoster(document, stats, TeamType.Home);
 		SetRoster(document, stats, TeamType.Away);
 
+		SetOfficialsRoster(document, stats);
+
 		using (var stream = igrf.Open())
 		{
 			document.Save(stream, SaveOptions.DisableFormatting);
@@ -77,17 +79,26 @@ public static class StatsBookModifier
 			}
 		}
 
-		for (var line = 0; line < stats.Scores.Period1.HomeScores.Length; ++line)
-			WriteScoreLine(stats.Scores.Period1.HomeScores[line], 0, line + 4);
+		for (var line = 0; line < stats.Scores.Period1.HomeScores.Lines.Length; ++line)
+			WriteScoreLine(stats.Scores.Period1.HomeScores.Lines[line], 0, line + 4);
 
-		for (var line = 0; line < stats.Scores.Period1.AwayScores.Length; ++line)
-			WriteScoreLine(stats.Scores.Period1.AwayScores[line], 19, line + 4);
+		for (var line = 0; line < stats.Scores.Period1.AwayScores.Lines.Length; ++line)
+			WriteScoreLine(stats.Scores.Period1.AwayScores.Lines[line], 19, line + 4);
 
-		for (var line = 0; line < stats.Scores.Period2.HomeScores.Length; ++line)
-			WriteScoreLine(stats.Scores.Period2.HomeScores[line], 0, line + 46);
+		for (var line = 0; line < stats.Scores.Period2.HomeScores.Lines.Length; ++line)
+			WriteScoreLine(stats.Scores.Period2.HomeScores.Lines[line], 0, line + 46);
 
-		for (var line = 0; line < stats.Scores.Period2.AwayScores.Length; ++line)
-			WriteScoreLine(stats.Scores.Period2.AwayScores[line], 19, line + 46);
+		for (var line = 0; line < stats.Scores.Period2.AwayScores.Lines.Length; ++line)
+			WriteScoreLine(stats.Scores.Period2.AwayScores.Lines[line], 19, line + 46);
+		
+		SetCell(document, 11, 1, stats.Scores.Period1.HomeScores.Scorekeeper);
+		SetCell(document, 14, 1, stats.Scores.Period1.HomeScores.JammerRef);
+		SetCell(document, 30, 1, stats.Scores.Period1.AwayScores.Scorekeeper);
+		SetCell(document, 33, 1, stats.Scores.Period1.AwayScores.JammerRef);
+		SetCell(document, 11, 43, stats.Scores.Period2.HomeScores.Scorekeeper);
+		SetCell(document, 14, 43, stats.Scores.Period2.HomeScores.JammerRef);
+		SetCell(document, 30, 43, stats.Scores.Period2.AwayScores.Scorekeeper);
+		SetCell(document, 33, 43, stats.Scores.Period2.AwayScores.JammerRef);
 
 		using (var stream = score.Open())
 		{
@@ -126,10 +137,21 @@ public static class StatsBookModifier
 			}
         }
 
-        WritePenalties(stats.Penalties.Period1.HomePenalties, 1, 4, new int[stats.Penalties.Period1.HomePenalties.Length]);
-        WritePenalties(stats.Penalties.Period1.AwayPenalties, 16, 4, new int[stats.Penalties.Period1.AwayPenalties.Length]);
-        WritePenalties(stats.Penalties.Period2.HomePenalties, 29, 4, stats.Penalties.Period1.HomePenalties.Select(p => p.Length).ToArray());
-        WritePenalties(stats.Penalties.Period2.AwayPenalties, 44, 4, stats.Penalties.Period1.AwayPenalties.Select(p => p.Length).ToArray());
+        WritePenalties(stats.Penalties.Period1.HomePenalties.Lines, 1, 4, new int[stats.Penalties.Period1.HomePenalties.Lines.Length]);
+        WritePenalties(stats.Penalties.Period1.AwayPenalties.Lines, 16, 4, new int[stats.Penalties.Period1.AwayPenalties.Lines.Length]);
+        WritePenalties(stats.Penalties.Period2.HomePenalties.Lines, 29, 4, stats.Penalties.Period1.HomePenalties.Lines.Select(p => p.Length).ToArray());
+        WritePenalties(stats.Penalties.Period2.AwayPenalties.Lines, 44, 4, stats.Penalties.Period1.AwayPenalties.Lines.Select(p => p.Length).ToArray());
+
+		var period1Tracker = 
+			!string.IsNullOrWhiteSpace(stats.Penalties.Period1.AwayPenalties.PenaltyTracker) && stats.Penalties.Period1.HomePenalties.PenaltyTracker != stats.Penalties.Period1.AwayPenalties.PenaltyTracker
+			? $"{stats.Penalties.Period1.HomePenalties.PenaltyTracker} / {stats.Penalties.Period1.AwayPenalties.PenaltyTracker}"
+			: stats.Penalties.Period1.HomePenalties.PenaltyTracker;
+		SetCell(document, 13, 1, period1Tracker);
+		var period2Tracker = 
+			!string.IsNullOrWhiteSpace(stats.Penalties.Period2.AwayPenalties.PenaltyTracker) && stats.Penalties.Period2.HomePenalties.PenaltyTracker != stats.Penalties.Period2.AwayPenalties.PenaltyTracker
+			? $"{stats.Penalties.Period2.HomePenalties.PenaltyTracker} / {stats.Penalties.Period2.AwayPenalties.PenaltyTracker}"
+			: stats.Penalties.Period2.HomePenalties.PenaltyTracker;
+		SetCell(document, 41, 1, period2Tracker);
 
 		using (var stream = penalties.Open())
 		{
@@ -175,10 +197,21 @@ public static class StatsBookModifier
 			}
 		}
 
-        WriteLineup(stats.Lineups.Period1.HomeLineups, 1, 4);
-        WriteLineup(stats.Lineups.Period1.AwayLineups, 27, 4);
-        WriteLineup(stats.Lineups.Period2.HomeLineups, 1, 46);
-        WriteLineup(stats.Lineups.Period2.AwayLineups, 27, 46);
+        WriteLineup(stats.Lineups.Period1.HomeLineups.Lines, 1, 4);
+        WriteLineup(stats.Lineups.Period1.AwayLineups.Lines, 27, 4);
+        WriteLineup(stats.Lineups.Period2.HomeLineups.Lines, 1, 46);
+        WriteLineup(stats.Lineups.Period2.AwayLineups.Lines, 27, 46);
+
+		var period1Tracker = 
+			!string.IsNullOrWhiteSpace(stats.Lineups.Period1.AwayLineups.LineupTracker) && stats.Lineups.Period1.HomeLineups.LineupTracker != stats.Lineups.Period1.AwayLineups.LineupTracker
+			? $"{stats.Lineups.Period1.HomeLineups.LineupTracker} / {stats.Lineups.Period1.AwayLineups.LineupTracker}"
+			: stats.Lineups.Period1.HomeLineups.LineupTracker;
+		SetCell(document, 15, 1, period1Tracker);
+		var period2Tracker = 
+			!string.IsNullOrWhiteSpace(stats.Lineups.Period2.AwayLineups.LineupTracker) && stats.Lineups.Period2.HomeLineups.LineupTracker != stats.Lineups.Period2.AwayLineups.LineupTracker
+			? $"{stats.Lineups.Period2.HomeLineups.LineupTracker} / {stats.Lineups.Period2.AwayLineups.LineupTracker}"
+			: stats.Lineups.Period2.HomeLineups.LineupTracker;
+		SetCell(document, 41, 1, period2Tracker);
 
 		using (var stream = lineup.Open())
 		{
@@ -211,6 +244,17 @@ public static class StatsBookModifier
 			SetSkater(document, teamType, i, roster.Skaters[i].Number, roster.Skaters[i].Name);
 		}
 	}
+
+	private static void SetOfficialsRoster(XDocument document, GameStats stats)
+	{
+		for(var i = 0; i < 28; ++i)
+		{
+			var official = stats.Officials.Length > i ? stats.Officials[i] : new Official { Name = "", Role = "" };
+
+			SetCell(document, 0, 60 + i, official.Role);
+			SetCell(document, 2, 60 + i, official.Name);
+		}
+	}
 	
 	private static string GetColumnString(int column)
 	{
@@ -234,7 +278,9 @@ public static class StatsBookModifier
 			.Single(e => e.Attribute("r")!.Value == rowString)
 			.Elements(ns + "c")
 			.Single(e => e.Attribute("r")!.Value == $"{columnString}{rowString}");
-			
+
+		cell.Attribute("t")?.Remove();
+
 		cell.Add(
 			new XAttribute("t", "inlineStr"),
 			new XElement(ns + "is",

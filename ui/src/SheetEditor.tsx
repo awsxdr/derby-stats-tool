@@ -1,4 +1,4 @@
-import { Alert, Alignment, Button, Intent, Menu, MenuDivider, MenuItem, Navbar, Popover, Tab, TabId, Tabs, Tooltip } from '@blueprintjs/core'
+import { Alert, Alignment, Button, Card, Intent, Menu, MenuDivider, MenuItem, Navbar, Overlay2, Popover, Spinner, Tab, TabId, Tabs, Tooltip } from '@blueprintjs/core'
 import { useCallback, useState } from 'react';
 import { DefaultGameState, useGameContext } from './GameStateContext';
 import { RostersContainer } from './RostersContainer';
@@ -6,11 +6,12 @@ import { ScoreSheetsContainer } from './ScoreSheetsContainer';
 import { PenaltiesContainer } from './PenaltiesContainer';
 import { LineupContainer } from './LineupContainer';
 import { useUserLoginContext } from './UserLoginContext';
-import styles from './Shared.module.css';
 import { useUserInfoContext } from './UserInfoContext';
 import { useApiContext } from './Api';
 import { useNavigate } from 'react-router';
 import { Footer } from './Footer';
+import sharedStyles from './Shared.module.css';
+import styles from './SheetEditor.module.css';
 
 export const SheetEditor = () => {
     const [selectedTab, setSelectedTab] = useState<TabId>('igrf');
@@ -59,7 +60,7 @@ export const SheetEditor = () => {
     return (
         <>
             <Navbar fixedToTop>
-                <Navbar.Group align={Alignment.LEFT} className={styles.logo}>
+                <Navbar.Group align={Alignment.LEFT} className={sharedStyles.logo}>
                     <Navbar.Heading>DerbyStats</Navbar.Heading>
                     <Navbar.Divider />
                 </Navbar.Group>
@@ -85,7 +86,7 @@ export const SheetEditor = () => {
                         id='MainTabs' 
                         onChange={handleTabChange} 
                         selectedTabId={selectedTab} 
-                        className={styles.scrollableTabBar} 
+                        className={sharedStyles.scrollableTabBar} 
                         renderActiveTabPanelOnly 
                         large 
                         fill
@@ -97,6 +98,15 @@ export const SheetEditor = () => {
                     </Tabs>
                 }
             </Navbar>
+            <Overlay2 isOpen={!user}>
+                <div>
+                    <div className={styles.loadingContainer}>
+                        <Card>
+                            <Spinner />
+                        </Card>
+                    </div>
+                </div>
+            </Overlay2>
             <Footer />
             <Alert
                 cancelButtonText='Cancel'

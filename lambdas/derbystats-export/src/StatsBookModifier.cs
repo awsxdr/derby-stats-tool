@@ -238,6 +238,8 @@ public static class StatsBookModifier
         SetCell(document, teamType == TeamType.Home ? 1 : 8, 10, roster.League);
         SetCell(document, teamType == TeamType.Home ? 1 : 8, 11, roster.Team);
         SetCell(document, teamType == TeamType.Home ? 1 : 8, 12, roster.Color);
+		SetCell(document, teamType == TeamType.Home ? 1 : 8, 49, roster.CaptainSkateName);
+		SetCell(document, teamType == TeamType.Home ? 1 : 8, 50, roster.CaptainLegalName);
 
 		for (var i = 0; i < (roster.Skaters?.Length ?? 0); ++i)
 		{
@@ -255,6 +257,8 @@ public static class StatsBookModifier
 
 			SetCell(document, 0, 60 + i, official.Role);
 			SetCell(document, 2, 60 + i, official.Name);
+			SetCell(document, 7, 60 + i, official.League);
+			SetCell(document, 10, 60 + i, official.CertificationLevel);
 		}
 	}
 	

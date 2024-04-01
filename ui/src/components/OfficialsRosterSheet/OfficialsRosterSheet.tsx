@@ -1,15 +1,11 @@
-import { MouseEventHandler, useCallback, useState } from "react";
-import { Alert, Button, Card, CardList, ControlGroup, FormGroup, InputGroup, Intent, MenuItem } from "@blueprintjs/core";
-import { ItemPredicate, ItemRendererProps, Suggest } from "@blueprintjs/select";
+import { useCallback, useState } from "react";
+import { Alert, Button, CardList, Intent } from "@blueprintjs/core";
 
 import { Official, useGameContext } from "@contexts";
+import { Role } from "./Role";
 
-import styles from './OfficialsRosterSheet.module.css';
-
-type Role = {
-    name: string,
-    initials?: string,
-}
+import styles from './OfficialsRosterSheet.module.scss';
+import { OfficialItem } from "./OfficialItem";
 
 const DEFAULT_ROLES: Role[] = [
     { name: "Head Non-Skating Official", initials: "HNSO" },
@@ -31,90 +27,7 @@ const DEFAULT_ROLES: Role[] = [
     { name: "Referee Alternate", initials: "ALTR" },
 ];
 
-interface OfficialItemProps {
-    index: number,
-    roles: Role[],
-    official: Official,
-    onRoleChange: (role: Role, index: number) => void,
-    onNameChange: (name: string, index: number) => void,
-    onRoleAdded: (value: string) => string,
-    onDelete: (key: number) => void,
-}
-
-const OfficialItem = ({ roles, official, index, onRoleChange, onNameChange, onRoleAdded, onDelete }: OfficialItemProps) => {
-
-    const handleDelete = useCallback(() => {
-        onDelete(index);
-    }, [index, onDelete])
-
-    const renderItem = (item: Role, props: ItemRendererProps<HTMLLIElement>) =>
-        props.modifiers.matchesPredicate && (
-            <MenuItem key={item.name} text={item.name} roleStructure='listoption' onClick={props.handleClick} onFocus={props.handleFocus} {...props} />
-        ) || null;
-
-    const filterRoles: ItemPredicate<Role> = (query, role, _, exactMatch) => {
-        if (exactMatch) {
-            return query.toLowerCase() === role.name.toLowerCase()
-                || query.toLowerCase() === role.initials?.toLocaleLowerCase();
-        } else {
-            return role.name.toLowerCase().indexOf(query.toLowerCase()) >= 0
-                || (role.initials?.toLowerCase().indexOf(query.toLowerCase()) ?? -1) >= 0;
-        }
-    }
-
-    const handleItemSelect = useCallback((role: Role) => {
-        onRoleChange(role, index);
-    }, [onRoleChange, index]);
-
-    const handleNameChange = useCallback((name: string) => {
-        onNameChange(name, index);
-    }, [onNameChange, index]);
-
-    const renderCreateButton = useCallback((query: string, active: boolean, handleClick: MouseEventHandler<HTMLAnchorElement>) => {
-
-        const handleAddRole = (event: React.MouseEvent<HTMLAnchorElement>) => {
-            onRoleAdded(query);
-            handleClick(event);
-        };
-
-        return (
-            <MenuItem 
-                icon='add' 
-                text={`Create "${query}"`} 
-                roleStructure='listoption' 
-                active={active} 
-                onClick={handleAddRole} 
-                shouldDismissPopover={false} />
-        )
-    }, [onRoleAdded]);
-
-    return (
-        <Card key={index}>
-            <ControlGroup className={styles.officialItem} fill>
-                <FormGroup label="Role" fill>
-                    <Suggest<Role> 
-                        items={roles}
-                        itemsEqual={(l, r) => l.name.toLowerCase() === r.name.toLowerCase()}
-                        itemPredicate={filterRoles}
-                        itemRenderer={renderItem} 
-                        inputValueRenderer={s => s.name}
-                        createNewItemFromQuery={s => ({ name: s })}
-                        createNewItemRenderer={renderCreateButton}
-                        fill 
-                        noResults={<MenuItem disabled text='No results.' roleStructure='listoption' />}
-                        onItemSelect={handleItemSelect}
-                        query={official.role}
-                        selectedItem={roles.find(r => r.name === official.role)}
-                    />
-                </FormGroup>
-                <FormGroup label="Name" fill>
-                    <InputGroup value={official.name} onValueChange={handleNameChange} />
-                </FormGroup>
-                <Button icon='trash' minimal onClick={handleDelete} />
-            </ControlGroup>
-        </Card>
-    )
-}
+const DEFAULT_OFFICIAL = (): Official => ({ role: '', name: '', league: '', certificationLevel: '' });
 
 export const OfficialsRosterSheet = () => {
 
@@ -125,7 +38,7 @@ export const OfficialsRosterSheet = () => {
     const { gameState, setGameState } = useGameContext();
 
     const addOfficial = useCallback(() => {
-        setGameState({ ...gameState, officials: [...gameState.officials, { role: '', name: '' }]})
+        setGameState({ ...gameState, officials: [...gameState.officials, DEFAULT_OFFICIAL()]})
     }, [gameState, setGameState]);
 
     const closeDeleteOfficialWarning = useCallback(() => setIsDeleteOfficialWarningOpen(false), [setIsDeleteOfficialWarningOpen]);
@@ -139,6 +52,18 @@ export const OfficialsRosterSheet = () => {
     const handleNameSet = useCallback((name: string, index: number) => {
         const officials = gameState.officials;
         officials[index].name = name;
+        setGameState({ ...gameState, officials });
+    }, [gameState, setGameState]);
+
+    const handleLeagueSet = useCallback((league: string, index: number) => {
+        const officials = gameState.officials;
+        officials[index].league = league;
+        setGameState({ ...gameState, officials });
+    }, [gameState, setGameState]);
+
+    const handleCertificationLevelSet = useCallback((certificationLevel: string, index: number) => {
+        const officials = gameState.officials;
+        officials[index].certificationLevel = certificationLevel;
         setGameState({ ...gameState, officials });
     }, [gameState, setGameState]);
 
@@ -169,6 +94,8 @@ export const OfficialsRosterSheet = () => {
                             onDelete={handleDeleteOfficial} 
                             onRoleChange={handleRoleSet}
                             onNameChange={handleNameSet}
+                            onLeagueChange={handleLeagueSet}
+                            onCertificationLevelChange={handleCertificationLevelSet}
                             onRoleAdded={handleRoleAdded}
                         />
                     )) }

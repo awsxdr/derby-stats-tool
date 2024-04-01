@@ -125,6 +125,8 @@ public class Official
 {
 	[JsonPropertyName("role")] public string Role { get; set; }
 	[JsonPropertyName("name")] public string Name { get; set; }
+	[JsonPropertyName("league")] public string League { get; set; }
+	[JsonPropertyName("certificationLevel")] public string CertificationLevel { get; set; }
 }
 
 public class Rosters

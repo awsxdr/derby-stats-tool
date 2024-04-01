@@ -5,8 +5,17 @@
 }
 
 .officialItem {
+    flex-wrap: wrap;
     @media screen and (max-width: 600px) {
         flex-direction: column !important;
+    }
+
+    :global(.bp5-form-group) {
+        max-width: 49%;
+
+        @media screen and (max-width: 600px) {
+            max-width: 95%;
+        }
     }
 }
 

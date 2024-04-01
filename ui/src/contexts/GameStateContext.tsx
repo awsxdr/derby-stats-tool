@@ -124,6 +124,8 @@ export type GameDetails = {
 export type Official = {
     role: string,
     name: string,
+    league: string,
+    certificationLevel: string,
 }
 
 type Officials = Official[];

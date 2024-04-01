@@ -1,9 +1,9 @@
-import { useCallback, useMemo, useState } from 'react';
-import { Cell, Column, ColumnHeaderCell, EditableCell2, Region, RenderMode, Table2 } from '@blueprintjs/table'
-import { FormGroup, HotkeyConfig, HotkeysTarget2, InputGroup } from '@blueprintjs/core';
+import { useCallback, useMemo } from 'react';
+import { Cell, Column, ColumnHeaderCell, EditableCell2 } from '@blueprintjs/table'
+import { FormGroup, InputGroup } from '@blueprintjs/core';
 
+import { StatsTable } from '@components';
 import { TeamType, useGameContext } from '@contexts';
-import { range } from '@/rangeMethods';
 
 import styles from './RosterSheet.module.css';
 
@@ -17,12 +17,8 @@ interface RosterSheetProps {
 
 export const RosterSheet = ({ teamType }: RosterSheetProps) => {
     const { gameState, setGameState } = useGameContext();
-    const [ selectedRange, setSelectedRange ] = useState<Region[]>([]);
-    const [ cellRenderCount, setCellRenderCount ] = useState(0);
 
     const roster = useMemo(() => gameState.rosters[teamType], [gameState, teamType]);
-
-    const rerenderTable = useCallback(() => setCellRenderCount(c => c + 1), [setCellRenderCount]);
 
     const createSkaterIfNeeded = useCallback((rowIndex: number) => {
         if(!roster.skaters[rowIndex]) {
@@ -107,132 +103,44 @@ export const RosterSheet = ({ teamType }: RosterSheetProps) => {
             default:
                 return '';
         }
-    }, []);
+    }, [roster]);
 
-    const handlePaste = useCallback(async () => {
-        if(selectedRange.length !== 1) return;
-
-        const clipboardText = await navigator.clipboard.readText();
-
-        if(!clipboardText) return;
-
-        if(selectedRange[0].cols === undefined || selectedRange[0].cols === null) return;
-        if(selectedRange[0].rows === undefined || selectedRange[0].rows === null) return;
-
-        const pastedData = clipboardText.split(/\r?\n/).map(l => l.split('\t'));
-
-        const selectedColumn = selectedRange[0].cols[0];
-        const selectedRow = selectedRange[0].rows[0];
-
-        switch(selectedColumn)
-        {
+    const setCellData = useCallback((row: number, column: number, value: string) => {
+        switch(column) {
             case 1:
-                for(let row = selectedRow; row < Math.min(selectedRow + pastedData.length, 20); ++row) {
-                    const pastedDataIndex = row - selectedRow;
-                    if(!pastedData[pastedDataIndex] || pastedData[pastedDataIndex].length === 0) continue;
-                    createSkaterIfNeeded(row);
-                    roster.skaters[row].number = pastedData[pastedDataIndex][0];
-                    if(pastedData[pastedDataIndex].length >= 2) {
-                        roster.skaters[row].name = pastedData[pastedDataIndex][1];
-                    }
-                }
+                createSkaterIfNeeded(row);
+                roster.skaters[row].number = value;
                 break;
 
             case 2:
-                for(let row = selectedRow; row < Math.min(selectedRow + pastedData.length, 20); ++row) {
-                    const pastedDataIndex = row - selectedRow;
-                    if(!pastedData[pastedDataIndex] || pastedData[pastedDataIndex].length === 0) continue;
-                    createSkaterIfNeeded(row);
-                    roster.skaters[row].name = pastedData[pastedDataIndex][0];
-                }
+                createSkaterIfNeeded(row);
+                roster.skaters[row].name = value;
                 break;
 
             default:
                 break;
         }
+    }, [createSkaterIfNeeded, roster]);
 
-        rerenderTable();
-        setGameState({ ...gameState, rosters: { ...gameState.rosters, [teamType]: roster }});
+    const deleteCellData = useCallback((row: number, column: number) => {
+        if(!roster.skaters[row]) return;
+        switch(column) {
+            case 1:
+                roster.skaters[row].number = '';
+                break;
 
-    }, [selectedRange, createSkaterIfNeeded, roster, rerenderTable]);
+            case 2:
+                roster.skaters[row].name = '';
+                break;
 
-    const handleDelete = useCallback(() => {
-        if(selectedRange.length !== 1) return;
-
-        if(selectedRange[0].cols === undefined || selectedRange[0].cols === null || selectedRange[0].cols.length !== 2) return;
-        if(selectedRange[0].rows === undefined || selectedRange[0].rows === null || selectedRange[0].rows.length !== 2) return;
-
-        for (let row = selectedRange[0].rows[0]; row <= selectedRange[0].rows[1]; ++row) {
-            for (let column = selectedRange[0].cols[0]; column <= selectedRange[0].cols[1]; ++column) {
-                if(!roster.skaters[row]) continue;
-                switch (column) {
-                    case 1:
-                        roster.skaters[row].number = '';
-                        break;
-
-                    case 2:
-                        roster.skaters[row].name = '';
-                        break;
-
-                    default:
-                        break;
-                }
+            default:
+                break;
             }
-        }
+    }, [roster]);
 
+    const handleBatchOperationCompleted = useCallback(() => {
         setGameState({ ...gameState, rosters: { ...gameState.rosters, [teamType]: roster }});
-        rerenderTable();
-
-    }, [selectedRange, roster, rerenderTable]);
-
-    const handleCut = useCallback(() => {
-        if(selectedRange.length !== 1) return;
-        if(selectedRange[0].cols === undefined || selectedRange[0].cols === null || selectedRange[0].cols.length !== 2) return;
-        if(selectedRange[0].rows === undefined || selectedRange[0].rows === null || selectedRange[0].rows.length !== 2) return;
-
-        const cutData = range(selectedRange[0].rows[0], selectedRange[0].rows[1])
-            .map(row => range(selectedRange[0].cols[0], selectedRange[0].cols[1])
-                .map(column => {
-                    switch (column) {
-                        case 1:
-                            return roster.skaters[row].number;
-
-                        case 2:
-                            return roster.skaters[row].name;
-
-                        default:
-                            return '';
-                    }
-                }).join('\t')
-            ).join('\n');
-
-        navigator.clipboard.writeText(cutData);
-
-        handleDelete();
-    }, [selectedRange, roster, handleDelete]);
-
-    const hotkeys: HotkeyConfig[] = [
-        {
-            combo: 'mod+v',
-            label: 'Paste',
-            global: true,
-            onKeyDown: handlePaste,
-        },
-        {
-            combo: 'del',
-            label: 'Delete',
-            global: true,
-            onKeyDown: handleDelete,
-        },
-        {
-            combo: 'mod+x',
-            label: 'Cut',
-            global: true,
-            onKeyDown: handleCut,
-        },
-    ];
-
-    const handleSelect = useCallback((regions: Region[]) => setSelectedRange(regions), [setSelectedRange]);
+    }, [gameState, roster, setGameState]);
 
     return (
         <div>
@@ -254,27 +162,18 @@ export const RosterSheet = ({ teamType }: RosterSheetProps) => {
                 </FormGroup>
             </div>
             <div className={styles.rosterTable}>
-                <HotkeysTarget2 hotkeys={hotkeys}>
-                    <Table2 
-                        numRows={20} 
-                        enableRowResizing={false} 
-                        enableColumnResizing={false}
-                        enableRowHeader={false} 
-                        enableColumnHeader={true}
-                        enableFocusedCell={true}
-                        enableGhostCells={false}
-                        columnWidths={[100, 100, 600]}
-                        renderMode={RenderMode.NONE}
-                        getCellClipboardData={getCellData}
-                        selectedRegions={selectedRange}
-                        onSelection={handleSelect}
-                        cellRendererDependencies={[cellRenderCount]}
-                    >
-                        <Column columnHeaderCellRenderer={renderHeader("# of players")} cellRenderer={renderPlayerNumberCell(LightPink)} />
-                        <Column columnHeaderCellRenderer={renderHeader("Skater #")} cellRenderer={renderSkaterNumberCell(White)} />
-                        <Column columnHeaderCellRenderer={renderHeader("Skater Name")} cellRenderer={renderSkaterNameCell(White)} />
-                    </Table2>
-                </HotkeysTarget2>
+                <StatsTable
+                    rowCount={20}
+                    columnWidths={[100, 100, 600]}
+                    getCellData={getCellData}
+                    setCellData={setCellData}
+                    deleteCellData={deleteCellData}
+                    onBatchOperationCompleted={handleBatchOperationCompleted}
+                >
+                    <Column columnHeaderCellRenderer={renderHeader("# of players")} cellRenderer={renderPlayerNumberCell(LightPink)} />
+                    <Column columnHeaderCellRenderer={renderHeader("Skater #")} cellRenderer={renderSkaterNumberCell(White)} />
+                    <Column columnHeaderCellRenderer={renderHeader("Skater Name")} cellRenderer={renderSkaterNameCell(White)} />
+                </StatsTable>
             </div>
         </div>
     )

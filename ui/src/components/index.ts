@@ -12,5 +12,6 @@ export * from './RosterSheet';
 export * from './ScoreOfficialsSheet';
 export * from './ScoreSheet';
 export * from './ScoreSheetsContainer';
+export * from './StatsTable';
 export * from './SuggestOfficial';
 export * from './ToggleCell';

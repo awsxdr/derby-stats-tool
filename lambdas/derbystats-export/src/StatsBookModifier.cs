@@ -251,14 +251,83 @@ public static class StatsBookModifier
 
 	private static void SetOfficialsRoster(XDocument document, GameStats stats)
 	{
+		var officials = stats.Officials.ToList();
+		string[] targetOrder = [
+			"Head Non-Skating Official",
+			"Penalty Tracker",
+			"Penalty Wrangler",
+			"Inside Whiteboard Operator",
+			"Jam Timer",
+			"Scorekeeper",
+			"Scorekeeper",
+			"ScoreBoard Operator",
+			"Penalty Box Manager",
+			"Penalty Box Timer",
+			"Penalty Box Timer",
+			"Lineup Tracker",
+			"Lineup Tracker",
+			"Non-Skating Official Alternate",
+			"Period Timer",
+			"",
+			"",
+			"",
+			"",
+			"",
+			"Head Referee",
+			"Inside Pack Referee",
+			"Jammer Referee",
+			"Jammer Referee",
+			"Outside Pack Referee",
+			"Outside Pack Referee",
+			"Outside Pack Referee",
+			"Referee Alternate",
+		];
+
+		string NormalizeRole(string role) => role.ToLowerInvariant().Replace(" ", "").Replace("-", "");
+
+		var orderedOfficials = new List<Official>();
+
+		foreach (var target in targetOrder)
+		{
+			var normalizedTarget = NormalizeRole(target);
+			var matchIndex = officials.FindIndex(o => NormalizeRole(o.Role).Equals(normalizedTarget));
+
+			if(matchIndex >= 0)
+			{
+				orderedOfficials.Add(officials[matchIndex]);
+				officials.RemoveAt(matchIndex);
+			}
+			else
+			{
+				orderedOfficials.Add(new Official() { Role = target });
+			}
+		}
+
+		if(officials.Count > 5)
+		{
+			// Unable to find enough matches
+			orderedOfficials = stats.Officials.ToList();
+		}
+		else
+		{
+			var firstBlankTarget = targetOrder.TakeWhile(r => !string.IsNullOrEmpty(r)).Count();
+			for(var i = 0; i < officials.Count; ++i)
+			{
+				orderedOfficials[firstBlankTarget + i] = officials[i];
+			}
+		}
+
 		for(var i = 0; i < 28; ++i)
 		{
-			var official = stats.Officials.Length > i ? stats.Officials[i] : new Official { Name = "", Role = "" };
+			var official = orderedOfficials.Count > i ? orderedOfficials[i] : new Official { Name = "", Role = "" };
 
 			SetCell(document, 0, 60 + i, official.Role);
 			SetCell(document, 2, 60 + i, official.Name);
 			SetCell(document, 7, 60 + i, official.League);
-			SetCell(document, 10, 60 + i, official.CertificationLevel);
+			if(int.TryParse(official.CertificationLevel, out var certificationLevel))
+			{
+				SetCellValue(document, 10, 60 + i, certificationLevel);
+			}
 		}
 	}
 	

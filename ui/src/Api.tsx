@@ -2,11 +2,16 @@ import { PropsWithChildren, createContext, useContext, useMemo } from "react";
 import { useUserLoginContext } from "./contexts/UserLoginContext";
 import { DefaultGameState, GameState } from "./contexts/GameStateContext";
 
+type DocumentResponse = {
+    game: GameState,
+    isDefault: boolean,
+}
+
 interface IApi {
     uploadBlankStatsBook: (fileName: string, fileContents: string) => Promise<void>,
     getBlankStatsBooks: () => Promise<string[]>,
     exportStatsBook: (game: GameState) => Promise<void>,
-    getDocument: () => Promise<GameState>,
+    getDocument: () => Promise<DocumentResponse>,
     setDocument: (game: GameState) => Promise<void>,
 }
 
@@ -53,15 +58,24 @@ const Api = (getToken: () => Promise<string>): IApi => ({
     },
 
     getDocument: async () => {
-        const response = await fetch('https://stats.awsxdr.com/api/stats', {
-            method: 'GET',
-            headers: [["Authorization", `Bearer ${await getToken()}`]],
-        });
+        try {
+            const response = await fetch('https://stats.awsxdr.com/api/stats', {
+                method: 'GET',
+                headers: [["Authorization", `Bearer ${await getToken()}`]],
+            });
 
-        if (response.ok) {
-            return await response.json();
-        } else {
-            return DefaultGameState();
+            if(response.ok) {
+                return { isDefault: false, game: await response.json() };
+            } else {
+                if(response.status === 404) {
+                    return { isDefault: true, game: DefaultGameState() };
+                } else {
+                    throw new Error(`Unexpected status code: ${response.status}`);
+                }
+            }
+        } catch(e) {
+            console.log("Error!", e);
+            return { isDefault: false, game: DefaultGameState() };
         }
     },
 

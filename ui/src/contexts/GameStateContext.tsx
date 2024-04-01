@@ -47,11 +47,11 @@ type ScoreLines = {
     lines: ScoreLine[],
 }
 
-const DEFAULT_SCORE_LINES: ScoreLines = {
+const DEFAULT_SCORE_LINES = (): ScoreLines => ({
     scorekeeper: '',
     jammerRef: '',
     lines: [],
-};
+});
 
 type PeriodScores = { [team in TeamType]: ScoreLines };
 type Scores = { [period in Period]: PeriodScores };
@@ -68,10 +68,10 @@ type PenaltyLines = {
     lines: PenaltyLine[],
 };
 
-const DEFAULT_PENALTY_LINES: PenaltyLines = {
+const DEFAULT_PENALTY_LINES = (): PenaltyLines => ({
     penaltyTracker: '',
     lines: [],
-};
+});
 
 type PeriodPenalties = { [team in TeamType]: PenaltyLines };
 type Penalties = { [period in Period]: PeriodPenalties };
@@ -102,10 +102,10 @@ type LineupLines = {
     lines: LineupLine[],
 };
 
-const DEFAULT_LINEUP_LINES: LineupLines = {
+const DEFAULT_LINEUP_LINES = (): LineupLines => ({
     lineupTracker: '',
     lines: [],
-};
+});
 
 type PeriodLineups = { [team in TeamType]: LineupLines };
 type Lineups = { [period in Period]: PeriodLineups };
@@ -156,16 +156,16 @@ export const DefaultGameState = (): GameState => ({
         away: { league: '', team: '', color: '', captainSkateName: '', captainLegalName: '', skaters: [] },
     },
     scores: {
-        1: { home: DEFAULT_SCORE_LINES, away: DEFAULT_SCORE_LINES },
-        2: { home: DEFAULT_SCORE_LINES, away: DEFAULT_SCORE_LINES },
+        1: { home: DEFAULT_SCORE_LINES(), away: DEFAULT_SCORE_LINES() },
+        2: { home: DEFAULT_SCORE_LINES(), away: DEFAULT_SCORE_LINES() },
     },
     penalties: {
-        1: { home: DEFAULT_PENALTY_LINES, away: DEFAULT_PENALTY_LINES },
-        2: { home: DEFAULT_PENALTY_LINES, away: DEFAULT_PENALTY_LINES },
+        1: { home: DEFAULT_PENALTY_LINES(), away: DEFAULT_PENALTY_LINES() },
+        2: { home: DEFAULT_PENALTY_LINES(), away: DEFAULT_PENALTY_LINES() },
     },
     lineups: {
-        1: { home: DEFAULT_LINEUP_LINES, away: DEFAULT_LINEUP_LINES },
-        2: { home: DEFAULT_LINEUP_LINES, away: DEFAULT_LINEUP_LINES },
+        1: { home: DEFAULT_LINEUP_LINES(), away: DEFAULT_LINEUP_LINES() },
+        2: { home: DEFAULT_LINEUP_LINES(), away: DEFAULT_LINEUP_LINES() },
     },
 })
 
@@ -192,15 +192,16 @@ export const GameStateContextProvider = ({ children }: PropsWithChildren) => {
     const { api } = useApiContext();
 
     useEffect(() => {
-        api?.getDocument().then(game => {
+        api?.getDocument().then(({ game, isDefault }) => {
             setState(game);
             setIsLoading(false);
-            setIsDirty(false);
+            setIsDirty(isDefault);
         })
         .catch(() => {
+            console.log("Failed to load existing document. Setting to default");
             setState(DefaultGameState());
             setIsLoading(false);
-            setIsDirty(false);
+            setIsDirty(true);
         });
     }, [setState, setIsLoading, setIsDirty, api]);
 

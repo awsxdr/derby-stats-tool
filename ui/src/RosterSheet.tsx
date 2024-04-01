@@ -2,7 +2,8 @@ import { Cell, Column, ColumnHeaderCell, EditableCell2, Region, RenderMode, Tabl
 import { useCallback, useMemo, useState } from 'react';
 import styles from './RosterSheet.module.css';
 import { TeamType, useGameContext } from './GameStateContext';
-import { FormGroup, Hotkey, HotkeyConfig, HotkeysTarget2, InputGroup } from '@blueprintjs/core';
+import { FormGroup, HotkeyConfig, HotkeysTarget2, InputGroup } from '@blueprintjs/core';
+import { range } from './rangeMethods';
 
 const LightPink = "#ffe8ff";
 const White = "#ffffff";
@@ -182,6 +183,32 @@ export const RosterSheet = ({ teamType }: RosterSheetProps) => {
 
     }, [selectedRange, roster, rerenderTable]);
 
+    const handleCut = useCallback(() => {
+        if(selectedRange.length !== 1) return;
+        if(selectedRange[0].cols === undefined || selectedRange[0].cols === null || selectedRange[0].cols.length !== 2) return;
+        if(selectedRange[0].rows === undefined || selectedRange[0].rows === null || selectedRange[0].rows.length !== 2) return;
+
+        const cutData = range(selectedRange[0].rows[0], selectedRange[0].rows[1])
+            .map(row => range(selectedRange[0].cols[0], selectedRange[0].cols[1])
+                .map(column => {
+                    switch (column) {
+                        case 1:
+                            return roster.skaters[row].number;
+
+                        case 2:
+                            return roster.skaters[row].name;
+
+                        default:
+                            return '';
+                    }
+                }).join('\t')
+            ).join('\n');
+
+        navigator.clipboard.writeText(cutData);
+
+        handleDelete();
+    }, [selectedRange, roster, handleDelete]);
+
     const hotkeys: HotkeyConfig[] = [
         {
             combo: 'mod+v',
@@ -194,6 +221,12 @@ export const RosterSheet = ({ teamType }: RosterSheetProps) => {
             label: 'Delete',
             global: true,
             onKeyDown: handleDelete,
+        },
+        {
+            combo: 'mod+x',
+            label: 'Cut',
+            global: true,
+            onKeyDown: handleCut,
         },
     ];
 

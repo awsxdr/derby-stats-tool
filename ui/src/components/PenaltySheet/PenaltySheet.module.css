@@ -7,6 +7,11 @@
     display: flex !important;
     flex-direction: column;
     justify-content: center !important;
-    font-size: 20px !important;
+    font-size: 15pt !important;
     font-weight: bold;
+    padding: 0 !important;
+}
+
+.penaltySideTable {
+    min-width: 60px;
 }

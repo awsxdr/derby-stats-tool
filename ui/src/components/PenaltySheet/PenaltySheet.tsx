@@ -4,6 +4,7 @@ import { Cell, Column, ColumnHeaderCell, EditableCell2, Table2 } from '@blueprin
 import { Penalty, PenaltyLine, Period, TeamType, useGameContext } from '@contexts';
 
 import styles from './PenaltySheet.module.css';
+import { StatsTable } from '..';
 
 type ContentRendererFn = (rowIndex: number) => ReactElement;
 type CellRendererFn = (color: string) => ContentRendererFn;
@@ -25,7 +26,8 @@ export const PenaltySheet = ({ teamType, period }: PenaltySheetProps) => {
     const roster = useMemo(() => gameState.rosters[teamType], [gameState, teamType]);
     const penalties = useMemo(() => gameState.penalties[period][teamType].lines, [gameState, teamType, period]);
 
-    const DEFAULT_PENALTY_LINE: () => PenaltyLine = () => Array.from({ length: 10 }, () => ({ code: '', jam: ''}));
+    const DEFAULT_PENALTY: () => Penalty = () => ({ code: '', jam: '' });
+    const DEFAULT_PENALTY_LINE: () => PenaltyLine = () => Array.from({ length: 10 }, DEFAULT_PENALTY);
 
     const createPenaltyLineIfMissing = (rowIndex: number) => {
         if(!penalties[rowIndex]) {
@@ -33,7 +35,7 @@ export const PenaltySheet = ({ teamType, period }: PenaltySheetProps) => {
         }
     }
 
-    const updatePenalties = () => {
+    const updateGameState = () => {
         setGameState({ 
             ...gameState, 
             penalties: { 
@@ -52,7 +54,7 @@ export const PenaltySheet = ({ teamType, period }: PenaltySheetProps) => {
     const handleChange = <T,>(row: number, column: number, setter: (line: Penalty, value: T) => void) => (value: T) => {
         createPenaltyLineIfMissing(row);
         setter(penalties[row][column], value);
-        updatePenalties();
+        updateGameState();
     }
 
     const renderPenaltyCodeCell = (column: number, row: number, color: string) => (
@@ -84,7 +86,7 @@ export const PenaltySheet = ({ teamType, period }: PenaltySheetProps) => {
     );
 
     const getRowTotal = useCallback((row: number) => {
-        const rowTotal = (penalties[row] && penalties[row].filter(p => p.code.trim().length > 0).length) ?? 0;
+        const rowTotal = (penalties[row] && penalties[row].slice(0, 9).filter(p => p.code.trim().length > 0).length) ?? 0;
 
         return rowTotal > 0 ? rowTotal.toString() : '';
     }, [penalties]);
@@ -105,6 +107,37 @@ export const PenaltySheet = ({ teamType, period }: PenaltySheetProps) => {
       </ColumnHeaderCell>
     );
 
+    const getCellData = useCallback((row: number, column: number) => {
+        const penaltyRow = Math.floor(row / 2);
+        if (penaltyRow >= penalties.length) return '';
+
+        if(!penalties[penaltyRow] || column >= penalties[penaltyRow].length) return '';
+
+        return row % 2 === 0 ? penalties[penaltyRow][column].code : penalties[penaltyRow][column].jam;
+    }, [penalties]);
+
+    const setCellData = useCallback((row: number, column: number, value: string) => {
+        const penaltyRow = Math.floor(row / 2);
+        createPenaltyLineIfMissing(penaltyRow);
+
+        if(row % 2 === 0) {
+            penalties[penaltyRow][column].code = value;
+        } else {
+            penalties[penaltyRow][column].jam = value;
+        }
+    }, [penalties, createPenaltyLineIfMissing]);
+
+    const deleteCellData = useCallback((row: number, column: number) => {
+        const penaltyRow = Math.floor(row / 2);
+        if (penaltyRow >= penalties.length || !penalties[penaltyRow]) return;
+
+        if (row % 2 === 0) {
+            penalties[penaltyRow][column].code = '';
+        } else {
+            penalties[penaltyRow][column].jam = '';
+        }
+    }, [penalties]);
+
     return (
       <div className={styles.penaltyTable}>
         <Table2
@@ -118,18 +151,17 @@ export const PenaltySheet = ({ teamType, period }: PenaltySheetProps) => {
             defaultRowHeight={40}
             columnWidths={[60]}
             selectedRegions={[]}
+            className={styles.penaltySideTable}
           >
             <Column columnHeaderCellRenderer={renderHeader("#")} cellRenderer={renderAlternatingColorCell(1, renderSkaterNumberCell, LightPink, DarkPink)} />
         </Table2>
-        <Table2 
-          numRows={40} 
-          enableRowResizing={false} 
-          enableColumnResizing={false}
-          enableRowHeader={false} 
-          enableColumnHeader={true}
-          enableFocusedCell={true}
-          enableGhostCells={false}
+        <StatsTable
+          rowCount={40} 
           columnWidths={[40, 40, 40, 40, 40, 40, 40, 40, 40, 40]}
+          getCellData={getCellData}
+          setCellData={setCellData}
+          deleteCellData={deleteCellData}
+          onBatchOperationCompleted={updateGameState}
         >
           <Column columnHeaderCellRenderer={renderHeader("1")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(0), White, LightPink)} />
           <Column columnHeaderCellRenderer={renderHeader("2")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(1), White, LightPink)} />
@@ -141,7 +173,7 @@ export const PenaltySheet = ({ teamType, period }: PenaltySheetProps) => {
           <Column columnHeaderCellRenderer={renderHeader("8")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(7), White, LightPink)} />
           <Column columnHeaderCellRenderer={renderHeader("9")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(8), White, LightPink)} />
           <Column columnHeaderCellRenderer={renderHeader("FO/EXP")} cellRenderer={renderPenaltyCell(9)(DarkPink)} />
-        </Table2>
+        </StatsTable>
         <Table2
             numRows={20}
             enableRowResizing={false} 
@@ -154,6 +186,7 @@ export const PenaltySheet = ({ teamType, period }: PenaltySheetProps) => {
             columnWidths={[60]}
             selectedRegions={[]}
             cellRendererDependencies={[gameState]}
+            className={styles.penaltySideTable}
           >
             <Column columnHeaderCellRenderer={renderHeader("Total")} cellRenderer={renderAlternatingColorCell(1, renderTotalsCell, White, LightPink)} />
         </Table2>

@@ -70,11 +70,11 @@ public static class StatsBookModifier
 			if (scoreLine.Injury) SetCell(document, column + 5, row, "X");
 			if (scoreLine.NoInitial) SetCell(document, column + 6, row, "X");
 
-			for (var trip = 2; trip < scoreLine.ScoringTrips.Length; ++trip)
+			for (var trip = 0; trip < scoreLine.ScoringTrips.Length; ++trip)
 			{
 				if (int.TryParse(scoreLine.ScoringTrips[trip], out var score))
 				{
-					SetCellValue(document, column + 7 + trip - 2, row, score);
+					SetCellValue(document, column + 7 + trip, row, score);
 				}
 			}
 		}
@@ -118,29 +118,29 @@ public static class StatsBookModifier
 			document = XDocument.Load(stream);
 		}
 
-        void WritePenalties(Penalty[][] penalties, int column, int row, int[] lineOffsets)
-        {
-            for(var line = 0; line < penalties.Length; ++line)
-            {
-                WritePenaltyLine(penalties[line], column + lineOffsets[line], row + line * 2);
-            }
-        }
-
-        void WritePenaltyLine(Penalty[] penalties, int column, int row)
-        {
-			for (var penalty = 0; penalty < penalties.Length; ++penalty)
+		void WritePenalties(Penalty[][] penalties, int column, int row)
+		{
+			for (var line = 0; line < penalties.Length; ++line)
 			{
-                if(penalties[penalty].Code.Length > 0)
-				    SetCell(document, column + penalty, row, penalties[penalty].Code);
-				if (int.TryParse(penalties[penalty].Jam, out var jam))
+				WritePenaltyLine(penalties[line], column, row + line * 2);
+			}
+		}
+
+		void WritePenaltyLine(Penalty[] penalties, int column, int row)
+		{
+			for (var penalty = 0; penalty < (penalties?.Length ?? 0); ++penalty)
+			{
+				if (penalties![penalty].Code.Length > 0)
+					SetCell(document, column + penalty, row, penalties![penalty].Code);
+				if (int.TryParse(penalties![penalty].Jam, out var jam))
 					SetCellValue(document, column + penalty, row + 1, jam);
 			}
-        }
+		}
 
-        WritePenalties(stats.Penalties.Period1.HomePenalties.Lines, 1, 4, new int[stats.Penalties.Period1.HomePenalties.Lines.Length]);
-        WritePenalties(stats.Penalties.Period1.AwayPenalties.Lines, 16, 4, new int[stats.Penalties.Period1.AwayPenalties.Lines.Length]);
-        WritePenalties(stats.Penalties.Period2.HomePenalties.Lines, 29, 4, stats.Penalties.Period1.HomePenalties.Lines.Select(p => p.Length).ToArray());
-        WritePenalties(stats.Penalties.Period2.AwayPenalties.Lines, 44, 4, stats.Penalties.Period1.AwayPenalties.Lines.Select(p => p.Length).ToArray());
+		WritePenalties(stats.Penalties.Period1.HomePenalties.Lines, 1, 4);
+		WritePenalties(stats.Penalties.Period1.AwayPenalties.Lines, 16, 4);
+		WritePenalties(stats.Penalties.Period2.HomePenalties.Lines, 29, 4);
+		WritePenalties(stats.Penalties.Period2.AwayPenalties.Lines, 44, 4);
 
 		var period1Tracker = 
 			!string.IsNullOrWhiteSpace(stats.Penalties.Period1.AwayPenalties.PenaltyTracker) && stats.Penalties.Period1.HomePenalties.PenaltyTracker != stats.Penalties.Period1.AwayPenalties.PenaltyTracker
@@ -239,9 +239,11 @@ public static class StatsBookModifier
         SetCell(document, teamType == TeamType.Home ? 1 : 8, 11, roster.Team);
         SetCell(document, teamType == TeamType.Home ? 1 : 8, 12, roster.Color);
 
-		for (var i = 0; i < roster.Skaters.Length; ++i)
+		for (var i = 0; i < (roster.Skaters?.Length ?? 0); ++i)
 		{
-			SetSkater(document, teamType, i, roster.Skaters[i].Number, roster.Skaters[i].Name);
+			if(roster.Skaters![i] == null)
+				continue;
+			SetSkater(document, teamType, i, roster.Skaters![i].Number, roster.Skaters[i].Name);
 		}
 	}
 
@@ -267,6 +269,9 @@ public static class StatsBookModifier
 	
 	private static void SetCell(XDocument document, int column, int row, string value)
 	{
+		if (string.IsNullOrWhiteSpace(value))
+			return;
+
 		var ns = document.Root!.Name.Namespace;
 		
 		var rowString = row.ToString();

@@ -5,6 +5,7 @@ import { Penalty, PenaltyLine, Period, TeamType, useGameContext } from '@context
 
 import styles from './PenaltySheet.module.css';
 import { StatsTable } from '..';
+import { range } from '@/rangeMethods';
 
 type ContentRendererFn = (rowIndex: number) => ReactElement;
 type CellRendererFn = (color: string) => ContentRendererFn;
@@ -13,6 +14,7 @@ const DarkPink = "#ffd0ff";
 const LightPink = "#ffe8ff";
 const White = "#ffffff";
 const Black = "#000000";
+const Gray = "#a0a0a0";
 
 interface PenaltySheetProps {
     teamType: TeamType,
@@ -25,6 +27,12 @@ export const PenaltySheet = ({ teamType, period }: PenaltySheetProps) => {
 
     const roster = useMemo(() => gameState.rosters[teamType], [gameState, teamType]);
     const penalties = useMemo(() => gameState.penalties[period][teamType].lines, [gameState, teamType, period]);
+    const previousPeriodPenaltyCounts = useMemo(() => 
+        range(0, 20).map(i =>
+            period === Period.TWO && gameState.penalties[Period.ONE][teamType].lines.length >= i && gameState.penalties[Period.ONE][teamType].lines[i]
+            ? gameState.penalties[Period.ONE][teamType].lines[i].filter(c => c && c.code.trim().length > 0).length
+            : 0),
+        [penalties, period, gameState, teamType]);
 
     const DEFAULT_PENALTY: () => Penalty = () => ({ code: '', jam: '' });
     const DEFAULT_PENALTY_LINE: () => PenaltyLine = () => Array.from({ length: 10 }, DEFAULT_PENALTY);
@@ -73,11 +81,13 @@ export const PenaltySheet = ({ teamType, period }: PenaltySheetProps) => {
         />
     );
 
-    const renderPenaltyCell = (column: number) => (color: string) => (row: number) => (
-        row % 2 == 0 
-            ? renderPenaltyCodeCell(column, Math.floor(row / 2), color)
-            : renderJamNumberCell(column, Math.floor(row / 2), color)
-        );
+    const renderPenaltyCell = (column: number) => (color: string) => (row: number) => {
+        const calculatedColor = column >= previousPeriodPenaltyCounts[Math.floor(row / 2)] ? color : Gray;
+
+        return row % 2 == 0 
+            ? renderPenaltyCodeCell(column, Math.floor(row / 2), calculatedColor)
+            : renderJamNumberCell(column, Math.floor(row / 2), calculatedColor);
+    }
 
     const renderSkaterNumberCell = (color: string) => (rowIndex: number) => (
         <Cell className={styles.playerNumberCell} style={{ backgroundColor: color }}>

@@ -106,14 +106,14 @@ export const RosterSheet = ({ teamType }: RosterSheetProps) => {
     }, [roster]);
 
     const setCellData = useCallback((row: number, column: number, value: string) => {
+        createSkaterIfNeeded(row);
+
         switch(column) {
             case 1:
-                createSkaterIfNeeded(row);
                 roster.skaters[row].number = value;
                 break;
 
             case 2:
-                createSkaterIfNeeded(row);
                 roster.skaters[row].name = value;
                 break;
 

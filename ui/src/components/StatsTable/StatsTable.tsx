@@ -7,13 +7,14 @@ interface StatsTableProps {
     children?: React.ReactElement<ColumnProps> | Array<React.ReactElement<ColumnProps>>;
     rowCount: number;
     columnWidths: number[];
+    cellRendererDependencies?: React.DependencyList;
     getCellData: (row: number, column: number) => string;
     setCellData: (row: number, column: number, value: string) => void;
     deleteCellData: (row: number, column: number) => void;
     onBatchOperationCompleted: () => void;
 }
 
-export const StatsTable = ({ children, rowCount, columnWidths, deleteCellData, getCellData, setCellData, onBatchOperationCompleted }: StatsTableProps) => {
+export const StatsTable = ({ children, rowCount, columnWidths, deleteCellData, cellRendererDependencies, getCellData, setCellData, onBatchOperationCompleted }: StatsTableProps) => {
     const [ selectedRange, setSelectedRange ] = useState<Region[]>([]);
     const [ cellRenderCount, setCellRenderCount ] = useState(0);
 
@@ -120,7 +121,7 @@ export const StatsTable = ({ children, rowCount, columnWidths, deleteCellData, g
                 getCellClipboardData={getCellData}
                 selectedRegions={selectedRange}
                 onSelection={handleSelect}
-                cellRendererDependencies={[cellRenderCount]}
+                cellRendererDependencies={(cellRendererDependencies ?? []).concat([cellRenderCount])}
             >
                 { children }
             </Table2>

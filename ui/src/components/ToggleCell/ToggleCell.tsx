@@ -40,7 +40,11 @@ export class ToggleCell extends React.Component<ToggleCellProps, ToggleCellState
         this.checkShouldFocus();
     }
 
-    public componentDidUpdate() {
+    public componentDidUpdate(previousProps: ToggleCellProps) {
+        if(this.props.value !== previousProps.value) {
+            this.setState({ value: this.props.value ?? false });
+        }
+        
         this.checkShouldFocus();
     }
 
@@ -56,19 +60,12 @@ export class ToggleCell extends React.Component<ToggleCellProps, ToggleCellState
             ...spreadableProps
         } = this.props;
 
-        const { value } = this.state;
         const interactive = spreadableProps.interactive;
 
         const textClasses = classNames(Classes.TABLE_EDITABLE_TEXT, {
             [Classes.TABLE_TRUNCATED_TEXT]: truncated,
             [Classes.TABLE_NO_WRAP_TEXT]: !wrapText,
         });
-
-        const cellContents = (
-            <div className={textClasses} style={{padding: 0}} ref={this.contentsRef}>
-                {value ? 'X' : ''}
-            </div>
-        );
 
         return (
             <Cell
@@ -89,7 +86,9 @@ export class ToggleCell extends React.Component<ToggleCellProps, ToggleCellState
                     stopPropagation={interactive}
                     targetRef={this.contentsRef}
                 >
-                    {cellContents}
+                    <div className={textClasses} style={{padding: 0}} ref={this.contentsRef}>
+                        {this.state.value ? 'X' : ''}
+                    </div>
                 </Draggable>
             </Cell>
         );
@@ -108,7 +107,7 @@ export class ToggleCell extends React.Component<ToggleCellProps, ToggleCellState
         e.preventDefault();
         e.bubbles = false;
 
-        this.setState({ value: !this.state.value });
+        this.toggleValue();
     };
 
     private handleCellActivate = () => {
@@ -116,10 +115,14 @@ export class ToggleCell extends React.Component<ToggleCellProps, ToggleCellState
     };
 
     private handleCellDoubleClick = () => {
+        this.toggleValue();
+    };
+
+    private toggleValue = () => {
         const newValue = !this.state.value;
         this.setState({ value: newValue });
         this.props.onConfirm && this.props.onConfirm(newValue);
-    };
+    }
 
     private hotkeys: HotkeyConfig[] = [
     ];

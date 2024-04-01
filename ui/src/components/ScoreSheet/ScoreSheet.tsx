@@ -1,7 +1,7 @@
-import { ReactElement, useCallback, useMemo } from 'react';
-import { Cell, Column, ColumnHeaderCell, EditableCell2, RenderMode, Table2 } from '@blueprintjs/table'
+import { ReactElement, useCallback, useMemo, useState } from 'react';
+import { Cell, Column, ColumnHeaderCell, EditableCell2 } from '@blueprintjs/table'
 
-import { ToggleCell } from '@components';
+import { StatsTable, ToggleCell } from '@components';
 import { LineupLine, Period, ScoreLine, TeamType, useGameContext } from '@contexts';
 
 import styles from './ScoreSheet.module.css';
@@ -24,6 +24,7 @@ const getTripValue = (trip: string) =>
 
 export const ScoreSheet = ({ teamType, period }: ScoreSheetProps) => {
     const { gameState, setGameState } = useGameContext();
+    const [ cellRenderCount, setCellRenderCount ] = useState(0);
 
     const scores = useMemo(() => gameState.scores[period][teamType].lines, [gameState, teamType, period]);
     const lineups = useMemo(() => gameState.lineups[period][teamType].lines, [gameState, period, teamType]);
@@ -73,6 +74,10 @@ export const ScoreSheet = ({ teamType, period }: ScoreSheetProps) => {
         }
     });
 
+    const rerenderTable = useCallback(() => {
+        setCellRenderCount(c => c + 1);
+    }, [setCellRenderCount]);
+
     const createScoreLineIfMissing = (rowIndex: number) => {
         if(!scores[rowIndex]) {
             scores[rowIndex] = DEFAULT_SCORE_LINE();
@@ -98,6 +103,7 @@ export const ScoreSheet = ({ teamType, period }: ScoreSheetProps) => {
         createLineupLineIfMissing(rowIndex);
         setter(scores[rowIndex], lineups[rowIndex], value);
         updateGameState();
+        rerenderTable();
     }
 
     const renderJamNumberCell = (color: string) => (rowIndex: number) => (
@@ -191,19 +197,96 @@ export const ScoreSheet = ({ teamType, period }: ScoreSheetProps) => {
             <span style={{ fontSize: '8pt' }}>{ name }</span>
         </ColumnHeaderCell>
     )
-  
+
+    const getCellData = useCallback((row: number, column: number) => {
+        if (row >= scores.length) return '';
+
+        if(column === 0) {
+            return scores[row].jam;
+        } else if (column === 1) {
+            return scores[row].jammer;
+        } else if (column === 2) {
+            return scores[row].lost ? 'X' : '';        
+        } else if (column === 3) {
+            return scores[row].lead ? 'X' : '';        
+        } else if (column === 4) {
+            return scores[row].call ? 'X' : '';        
+        } else if (column === 5) {
+            return scores[row].injury ? 'X' : '';        
+        } else if (column === 6) {
+            return scores[row].noInitial ? 'X' : '';        
+        } else if (column >= 7 && column <= 15) {
+            if (scores[row].trips.length <= (column - 7)) return '';
+            return scores[row].trips[column - 7];
+        } else if (column === 16) {
+            return scores[row]?.jam ? calculateJamTotal(row).toString() : '';
+        } else if (column === 17) {
+            return scores[row]?.jam ? calculateGameTotal(row).toString() : '';
+        } else {
+            return '';
+        }
+    }, [scores, calculateJamTotal, calculateGameTotal]);
+
+    const setCellData = useCallback((row: number, column: number, value: string) => {
+        createScoreLineIfMissing(row);
+        createLineupLineIfMissing(row);
+
+        if(column === 0) {
+            scores[row].jam = value;
+            lineups[row].jamNumber = value;
+        } else if (column === 1) {
+            scores[row].jammer = value;
+            lineups[row].skaters.jammer.number = value;
+        } else if (column === 2) {
+            scores[row].lost = value.trim() === 'X' || value.trim() === '/' || value.trim() === 'x';
+        } else if (column === 3) {
+            scores[row].lead = value.trim() === 'X' || value.trim() === '/' || value.trim() === 'x';
+        } else if (column === 4) {
+            scores[row].call = value.trim() === 'X' || value.trim() === '/' || value.trim() === 'x';
+        } else if (column === 5) {
+            scores[row].injury = value.trim() === 'X' || value.trim() === '/' || value.trim() === 'x';
+        } else if (column === 6) {
+            scores[row].noInitial = value.trim() === 'X' || value.trim() === '/' || value.trim() === 'x';
+        } else if (column >= 7 && column <= 15) {
+            scores[row].trips[column - 7] = value;
+        }
+    }, [lineups, scores, createLineupLineIfMissing, createScoreLineIfMissing]);
+
+    const deleteCellData = useCallback((row: number, column: number) => {
+        if (row >= scores.length || !scores[row]) return;
+
+        if(column === 0) {
+            scores[row].jam = '';
+            lineups[row].jamNumber = '';
+        } else if (column === 1) {
+            scores[row].jammer = '';
+            lineups[row].skaters.jammer.number = '';
+        } else if (column === 2) {
+            scores[row].lost = false;
+        } else if (column === 3) {
+            scores[row].lead = false;
+        } else if (column === 4) {
+            scores[row].call = false;
+        } else if (column === 5) {
+            scores[row].injury = false;
+        } else if (column === 6) {
+            scores[row].noInitial = false;
+        } else if (column >= 7 && column <= 15) {
+            if (scores[row].trips.length <= (column - 7)) return;
+            scores[row].trips[column - 7] = '';
+        }
+    }, [scores, lineups]);
+
     return (
         <div className={styles.scoreTable}>
-            <Table2 
-                numRows={39} 
-                enableRowResizing={false} 
-                enableColumnResizing={false}
-                enableRowHeader={false} 
-                enableColumnHeader={true}
-                enableFocusedCell={true}
-                enableGhostCells={false}
+            <StatsTable
+                rowCount={39}
                 columnWidths={[40, 100, 20, 20, 20, 20, 20, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60]}
-                renderMode={RenderMode.NONE}
+                cellRendererDependencies={[cellRenderCount]}
+                getCellData={getCellData}
+                setCellData={setCellData}
+                deleteCellData={deleteCellData}
+                onBatchOperationCompleted={updateGameState}
             >
                 <Column columnHeaderCellRenderer={renderHorizontalHeader("Jam")} cellRenderer={renderAlternatingColorCell(renderJamNumberCell, LightGreen, DarkGreen)} />
                 <Column columnHeaderCellRenderer={renderHorizontalHeader("Jammer's number")} cellRenderer={renderAlternatingColorCell(renderJammerNumberCell, White, LightGreen)} />
@@ -212,18 +295,18 @@ export const ScoreSheet = ({ teamType, period }: ScoreSheetProps) => {
                 <Column columnHeaderCellRenderer={renderVerticalHeader("Call")} cellRenderer={renderAlternatingColorCell(renderCallCell, LightGreen, DarkGreen)} />
                 <Column columnHeaderCellRenderer={renderVerticalHeader("Inj.")} cellRenderer={renderAlternatingColorCell(renderInjuryCell, LightGreen, DarkGreen)} />
                 <Column columnHeaderCellRenderer={renderVerticalHeader("NI")} cellRenderer={renderAlternatingColorCell(renderNoInitialCell, LightGreen, DarkGreen)} />
-                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 2")} cellRenderer={renderAlternatingColorCell(renderTripCell(2), White, LightGreen)} />
-                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 3")} cellRenderer={renderAlternatingColorCell(renderTripCell(3), White, LightGreen)} />
-                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 4")} cellRenderer={renderAlternatingColorCell(renderTripCell(4), White, LightGreen)} />
-                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 5")} cellRenderer={renderAlternatingColorCell(renderTripCell(5), White, LightGreen)} />
-                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 6")} cellRenderer={renderAlternatingColorCell(renderTripCell(6), White, LightGreen)} />
-                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 7")} cellRenderer={renderAlternatingColorCell(renderTripCell(7), White, LightGreen)} />
-                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 8")} cellRenderer={renderAlternatingColorCell(renderTripCell(8), White, LightGreen)} />
-                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 9")} cellRenderer={renderAlternatingColorCell(renderTripCell(9), White, LightGreen)} />
-                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 10")} cellRenderer={renderAlternatingColorCell(renderTripCell(10), White, LightGreen)} />
+                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 2")} cellRenderer={renderAlternatingColorCell(renderTripCell(0), White, LightGreen)} />
+                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 3")} cellRenderer={renderAlternatingColorCell(renderTripCell(1), White, LightGreen)} />
+                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 4")} cellRenderer={renderAlternatingColorCell(renderTripCell(2), White, LightGreen)} />
+                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 5")} cellRenderer={renderAlternatingColorCell(renderTripCell(3), White, LightGreen)} />
+                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 6")} cellRenderer={renderAlternatingColorCell(renderTripCell(4), White, LightGreen)} />
+                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 7")} cellRenderer={renderAlternatingColorCell(renderTripCell(5), White, LightGreen)} />
+                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 8")} cellRenderer={renderAlternatingColorCell(renderTripCell(6), White, LightGreen)} />
+                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 9")} cellRenderer={renderAlternatingColorCell(renderTripCell(7), White, LightGreen)} />
+                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 10")} cellRenderer={renderAlternatingColorCell(renderTripCell(8), White, LightGreen)} />
                 <Column columnHeaderCellRenderer={renderHorizontalHeader("Jam Total")} cellRenderer={renderAlternatingColorCell(renderJamTotalCell, LightGreen, DarkGreen)} />
                 <Column columnHeaderCellRenderer={renderHorizontalHeader("Game Total")} cellRenderer={renderConstantColorCell(renderGameTotalCell, DarkGreen)} />
-            </Table2>
+            </StatsTable>
         </div>
     )
   }

@@ -1,7 +1,7 @@
-import { ReactElement, useMemo } from 'react';
-import { Cell, Column, ColumnHeaderCell, EditableCell2, RenderMode, Table2 } from '@blueprintjs/table'
+import { ReactElement, useCallback, useMemo } from 'react';
+import { Cell, Column, ColumnHeaderCell, EditableCell2 } from '@blueprintjs/table'
 
-import { ToggleCell } from '@components'
+import { StatsTable, ToggleCell } from '@components'
 import { LineupLine, Period, SkaterType, TeamType, useGameContext } from '@contexts';
 
 import styles from './LineupSheet.module.css';
@@ -50,7 +50,7 @@ export const LineupSheet = ({ teamType, period }: LineupSheetProps) => {
         }
     }
 
-    const updateLineups = () => {
+    const updateGameState = () => {
         setGameState({ 
             ...gameState, 
             lineups: { 
@@ -69,7 +69,7 @@ export const LineupSheet = ({ teamType, period }: LineupSheetProps) => {
     const handleChange = <T,>(setter: (line: LineupLine, value: T)=> void) => (rowIndex: number) => (value: T) => {
         createLineupLineIfMissing(rowIndex);
         setter(lineups[rowIndex], value);
-        updateLineups();
+        updateGameState();
     }
 
     const renderJamNumberCell = (color: string) => (rowIndex: number) => (
@@ -115,18 +115,101 @@ export const LineupSheet = ({ teamType, period }: LineupSheetProps) => {
       </ColumnHeaderCell>
     );
 
+    const getCellData = useCallback((row: number, column: number) => {
+        if (row > lineups.length || !lineups[row]) return '';
+
+        if (column === 0) {
+            return lineups[row].jamNumber;
+        } else if (column === 1) {
+            return lineups[row].noPivot ? 'X' : '';
+        } else if (column >= 2 && column <= 21) {
+            const skaterIndex = Math.floor((column - 2) / 4);
+            const skater =
+                skaterIndex === 0 ? lineups[row].skaters.jammer
+                : skaterIndex === 1 ? lineups[row].skaters.pivot
+                : skaterIndex === 2 ? lineups[row].skaters.blocker1
+                : skaterIndex === 3 ? lineups[row].skaters.blocker2
+                : skaterIndex === 4 ? lineups[row].skaters.blocker3
+                : undefined;
+            
+            if(!skater) return '';
+
+            if ((column - 2) % 4 === 0) {
+                return skater.number;
+            } else {
+                const eventIndex = ((column - 2) % 4) - 1;
+                return skater.events[eventIndex];
+            }
+        } else {
+            return '';
+        }
+    }, [lineups]);
+
+    const setCellData = useCallback((row: number, column: number, value: string) => {
+        createLineupLineIfMissing(row);
+
+        if (column === 0) {
+            lineups[row].jamNumber = value;
+        } else if (column === 1) {
+            lineups[row].noPivot = value.trim() === 'X' || value.trim() === '/' || value.trim() === 'x';
+        } else if (column >= 2 && column <= 21) {
+            const skaterIndex = Math.floor((column - 2) / 4);
+            const skater =
+                skaterIndex === 0 ? lineups[row].skaters.jammer
+                : skaterIndex === 1 ? lineups[row].skaters.pivot
+                : skaterIndex === 2 ? lineups[row].skaters.blocker1
+                : skaterIndex === 3 ? lineups[row].skaters.blocker2
+                : skaterIndex === 4 ? lineups[row].skaters.blocker3
+                : undefined;
+            
+            if(!skater) return;
+
+            if ((column - 2) % 4 === 0) {
+                skater.number = value;
+            } else {
+                const eventIndex = ((column - 2) % 4) - 1;
+                skater.events[eventIndex] = value.substring(0, 1);
+            }
+        }
+    }, [lineups, createLineupLineIfMissing]);
+
+    const deleteCellData = useCallback((row: number, column: number) => {
+        if (row >= lineups.length || !lineups[row]) return;
+
+        if (column === 0) {
+            lineups[row].jamNumber = '';
+        } else if (column === 1) {
+            lineups[row].noPivot = false;
+        } else if (column >= 2 && column <= 21) {
+            const skaterIndex = Math.floor((column - 2) / 4);
+            const skater =
+                skaterIndex === 0 ? lineups[row].skaters.jammer
+                : skaterIndex === 1 ? lineups[row].skaters.pivot
+                : skaterIndex === 2 ? lineups[row].skaters.blocker1
+                : skaterIndex === 3 ? lineups[row].skaters.blocker2
+                : skaterIndex === 4 ? lineups[row].skaters.blocker3
+                : undefined;
+            
+            if(!skater) return;
+
+            if ((column - 2) % 4 === 0) {
+                skater.number = '';
+            } else {
+                const eventIndex = ((column - 2) % 4) - 1;
+                skater.events[eventIndex] = '';
+            }
+        }
+    }, []);
+
     return (
       <div className={styles.lineupTable}>
-        <Table2 
-          numRows={40} 
-          enableRowResizing={false} 
-          enableColumnResizing={false}
-          enableRowHeader={false} 
-          enableColumnHeader={true}
-          enableFocusedCell={true}
-          enableGhostCells={false}
+        <StatsTable 
+          rowCount={40} 
           columnWidths={[50, 50, 100, 20, 20, 20, 100, 20, 20, 20, 100, 20, 20, 20, 100, 20, 20, 20, 100, 20, 20, 20]}
-          renderMode={RenderMode.BATCH_ON_UPDATE}
+          getCellData={getCellData}
+          setCellData={setCellData}
+          deleteCellData={deleteCellData}
+          onBatchOperationCompleted={updateGameState}
         >
           <Column columnHeaderCellRenderer={renderHeader("Jam")} cellRenderer={renderAlternatingColorCell(renderJamNumberCell, LightBlue, MediumBlue)} />
           <Column columnHeaderCellRenderer={renderHeader("No Pivot")} cellRenderer={renderAlternatingColorCell(renderNoPivotCell, LightBlue, MediumBlue)} />
@@ -150,7 +233,7 @@ export const LineupSheet = ({ teamType, period }: LineupSheetProps) => {
           <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Blocker3, 0), DarkBlue)} />
           <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Blocker3, 1), DarkBlue)} />
           <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Blocker3, 2), DarkBlue)} />
-        </Table2>
+        </StatsTable>
       </div>
     )
   }

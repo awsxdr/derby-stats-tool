@@ -1,6 +1,6 @@
 import { PropsWithChildren, createContext, useContext, useMemo } from "react";
-import { useUserLoginContext } from "./UserLoginContext";
-import { DefaultGameState, GameState } from "./GameStateContext";
+import { useUserLoginContext } from "./contexts/UserLoginContext";
+import { DefaultGameState, GameState } from "./contexts/GameStateContext";
 
 interface IApi {
     uploadBlankStatsBook: (fileName: string, fileContents: string) => Promise<void>,

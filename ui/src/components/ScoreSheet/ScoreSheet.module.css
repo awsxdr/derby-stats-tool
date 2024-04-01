@@ -1,0 +1,9 @@
+.scrollableTabBar {
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.scoreTable {
+    justify-content: center;
+    display: flex;
+}

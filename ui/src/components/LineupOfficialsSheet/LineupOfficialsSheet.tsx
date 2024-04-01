@@ -35,7 +35,7 @@ export const LineupOfficialsSheet = () => {
                 <FormGroup label='Home team lineup tracker' fill>
                     <SuggestOfficial 
                         officialNames={officialNames} 
-                        value={gameState.lineups[1].home.lineupTracker} 
+                        value={gameState.lineups[1].home.lineupTracker ?? ''} 
                         onChange={setOfficial(Period.ONE, TeamType.HOME)} 
                         onNameAdded={handleNameAdded} 
                     />
@@ -43,7 +43,7 @@ export const LineupOfficialsSheet = () => {
                 <FormGroup label='Away team lineup tracker (if different)' fill>
                     <SuggestOfficial 
                         officialNames={officialNames} 
-                        value={gameState.lineups[1].away.lineupTracker} 
+                        value={gameState.lineups[1].away.lineupTracker ?? ''} 
                         onChange={setOfficial(Period.ONE, TeamType.AWAY)} 
                         onNameAdded={handleNameAdded} 
                     />
@@ -54,7 +54,7 @@ export const LineupOfficialsSheet = () => {
                 <FormGroup label='Home team lineup tracker' fill>
                     <SuggestOfficial 
                         officialNames={officialNames} 
-                        value={gameState.lineups[2].home.lineupTracker} 
+                        value={gameState.lineups[2].home.lineupTracker ?? ''} 
                         onChange={setOfficial(Period.TWO, TeamType.HOME)} 
                         onNameAdded={handleNameAdded} 
                     />
@@ -62,7 +62,7 @@ export const LineupOfficialsSheet = () => {
                 <FormGroup label='Away team lineup tracker (if different)' fill>
                     <SuggestOfficial 
                         officialNames={officialNames} 
-                        value={gameState.lineups[2].away.lineupTracker} 
+                        value={gameState.lineups[2].away.lineupTracker ?? ''} 
                         onChange={setOfficial(Period.TWO, TeamType.AWAY)} 
                         onNameAdded={handleNameAdded} 
                     />

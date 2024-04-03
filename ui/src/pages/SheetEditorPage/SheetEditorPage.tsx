@@ -1,20 +1,22 @@
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Alert, Alignment, Button, Card, Intent, Menu, MenuDivider, MenuItem, Navbar, Overlay2, Popover, Spinner, Tab, TabId, Tabs, Tooltip } from '@blueprintjs/core'
+import { Alert, Alignment, Button, Card, Icon, Intent, Menu, MenuDivider, MenuItem, Navbar, Overlay2, Popover, Spinner, Tab, TabId, Tabs, Tooltip } from '@blueprintjs/core'
 
-import { Footer, LineupContainer, PenaltiesContainer, RostersContainer, ScoreSheetsContainer } from '@components';
+import { AppToaster, Footer, LineupContainer, PenaltiesContainer, RostersContainer, ScoreSheetsContainer } from '@components';
 import { DefaultGameState, useGameContext, useUserInfoContext, useUserLoginContext } from '@contexts';
 import { useApiContext } from '@/Api';
 
 import sharedStyles from '@/Shared.module.css';
 import styles from './SheetEditorPage.module.css';
+import classNames from 'classnames';
 
 export const SheetEditorPage = () => {
     const [selectedTab, setSelectedTab] = useState<TabId>('igrf');
     const [isConfirmNewOpen, setIsConfirmNewOpen] = useState(false);
     const [isWarnNoBlankStatsOpen, setIsWarnNoBlankStatsOpen] = useState(false);
+    const [isExporting, setIsExporting] = useState(false);
 
-    const { gameState, setGameState, isLoading } = useGameContext();
+    const { gameState, setGameState, isLoading, isDirty, isFaulted, retryUpload } = useGameContext();
     const { logout } = useUserLoginContext();
     const { user } = useUserInfoContext();
     const { api } = useApiContext();
@@ -39,14 +41,19 @@ export const SheetEditorPage = () => {
 
     const downloadFile = useCallback(() => {
         if (user?.blankStatsbooks.length ?? 0 > 0) {
-            api?.exportStatsBook(gameState);
+            setIsExporting(true);
+            api?.exportStatsBook(gameState)
+            ?.catch(() => AppToaster.then(toaster => toaster.show({ message: 'Failed to export document', intent: Intent.DANGER })))
+            .finally(() => setIsExporting(false));
         } else {
             setIsWarnNoBlankStatsOpen(true);
         }
-    }, [gameState, api, user, setIsWarnNoBlankStatsOpen]);
+    }, [gameState, api, user, setIsWarnNoBlankStatsOpen, setIsExporting]);
 
     const UserMenu = () => (
         <Menu>
+            <MenuItem text='Print' icon='print' href='/print' target='_blank' />
+            <MenuDivider />
             <MenuItem text='Settings' icon='cog' href='/settings' />
             <MenuDivider />
             <MenuItem text='Logout' icon='log-out' onClick={logout} />
@@ -68,11 +75,17 @@ export const SheetEditorPage = () => {
                         <Button intent='none' minimal icon='folder-open' disabled />
                     </Tooltip>
                     <Tooltip content="Download stats book" placement='bottom'>
-                        <Button intent='none' minimal icon='download' onClick={downloadFile} disabled={!user} />
+                        <Button intent='none' minimal icon='download' onClick={downloadFile} disabled={!user} loading={isExporting} />
                     </Tooltip>
                     <Navbar.Divider />
                 </Navbar.Group>
                 <Navbar.Group align={Alignment.RIGHT}>
+                    {(
+                        isFaulted ? <Button minimal icon='cloud-upload' intent='danger' onClick={retryUpload} />
+                        : isDirty ? <Icon icon='cloud-upload' intent='warning' className={classNames(styles.uploadingStatus, styles.statusIcon)} />
+                        : <Icon icon='cloud-tick' intent='success' className={styles.statusIcon} />
+                    )}
+                    
                     <Popover content={<UserMenu />} placement='bottom-start'>
                         <Button minimal icon='menu' />
                     </Popover>

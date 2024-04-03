@@ -17,7 +17,7 @@ interface IApi {
 
 const Api = (getToken: () => Promise<string>): IApi => ({
     uploadBlankStatsBook: async (fileName: string, fileContents: string) => {
-        await fetch('https://stats.awsxdr.com/api/stats/blank', {
+        const response = await fetch('https://stats.awsxdr.com/api/stats/blank', {
             method: 'POST',
             headers: [["Authorization", `Bearer ${await getToken()}`]],
             body: JSON.stringify({
@@ -25,6 +25,10 @@ const Api = (getToken: () => Promise<string>): IApi => ({
                 data: fileContents
             }),
         });
+
+        if(!response.ok) {
+            throw new Error(`Upload failed. Status code: ${response.status}`);
+        }
     },
 
     getBlankStatsBooks: async () => {
@@ -50,7 +54,13 @@ const Api = (getToken: () => Promise<string>): IApi => ({
         const blob = await response.blob();
         const link = document.createElement('a');
         link.href = window.URL.createObjectURL(blob);
-        link.download = 'stats.xlsx';
+
+        const statsBookName = 
+            !!game.rosters.home.team && !!game.rosters.away.team
+            ? `STATS-${game.game.date}_${game.rosters.home.league.replace(/\s/g, '')}${game.rosters.home.team.replace(/\s/g, '')}_vs_${game.rosters.away.league.replace(/\s/g, '')}${game.rosters.away.team.replace(/\s/g, '')}.xlsx`
+            : 'statsbook.xlsx';
+
+        link.download = statsBookName;
 
         document.body.appendChild(link);
         link.click();
@@ -74,17 +84,20 @@ const Api = (getToken: () => Promise<string>): IApi => ({
                 }
             }
         } catch(e) {
-            console.log("Error!", e);
             return { isDefault: false, game: DefaultGameState() };
         }
     },
 
     setDocument: async (game: GameState) => {
-        await fetch('https://stats.awsxdr.com/api/stats', {
+        const response = await fetch('https://stats.awsxdr.com/api/stats', {
             method: 'POST',
             body: JSON.stringify(game),
             headers: [["Authorization", `Bearer ${await getToken()}`]],
         });
+
+        if (!response.ok) {
+            throw new Error(`Error uploading changes. Status code: ${response.status}`);
+        }
     },
 });
 

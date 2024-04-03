@@ -8,6 +8,7 @@ import { useApiContext } from "@/Api";
 
 import sharedStyles from '@/Shared.module.css';
 import styles from './SettingsPage.module.css';
+import { AppToaster } from "@/components/AppToaster";
 
 export const SettingsPage = () => {
     const { user } = useUserInfoContext();
@@ -20,6 +21,14 @@ export const SettingsPage = () => {
     useEffect(() => {
         setSelectedFileName((user?.blankStatsbooks.length ?? 0) && user?.blankStatsbooks[0]?.filename || '');
     }, [user, setSelectedFileName])
+
+    const showUploadCompleteToast = async () => {
+        (await AppToaster).show({ message: "Upload complete", intent: Intent.SUCCESS });
+    }
+
+    const showUploadFailedToast = async () => {
+        (await AppToaster).show({ message: "Upload failed", intent: Intent.DANGER });
+    }
 
     const handleInputChange = useCallback((event: FormEvent<HTMLInputElement>) => {
         const validFiles = Array.from(event.currentTarget?.files ?? []).filter(file => file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -53,11 +62,14 @@ export const SettingsPage = () => {
         const base64Data = Base64.fromUint8Array(readData);
 
         setIsUploading(true);
-        await api?.uploadBlankStatsBook(selectedFile.name, base64Data);
+        try {
+            await api?.uploadBlankStatsBook(selectedFile.name, base64Data);
+            await showUploadCompleteToast();
+            setSelectedFile(undefined);
+        } catch {
+            await showUploadFailedToast();
+        }
         setIsUploading(false);
-
-        setSelectedFile(undefined);
-
     }, [selectedFile, setSelectedFile, setIsUploading, api]);
 
     return (
@@ -97,6 +109,7 @@ export const SettingsPage = () => {
                     </FormGroup>
                 </SectionCard>
             </Section>
+
         </>
     );
 }

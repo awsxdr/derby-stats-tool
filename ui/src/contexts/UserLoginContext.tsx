@@ -92,7 +92,7 @@ const refreshToken = async (token: string): Promise<TokenResponse> => {
     });
 
     if(response.ok) {
-        return await response.json();
+        return { ...await response.json(), refresh_token: token };
     }
 
     return { id_token: '', access_token: '', refresh_token: '', expires_in: 0 };

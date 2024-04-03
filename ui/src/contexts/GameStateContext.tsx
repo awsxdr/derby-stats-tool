@@ -1,6 +1,8 @@
 import { PropsWithChildren, createContext, useCallback, useContext, useEffect, useState } from "react";
 import moment from 'moment';
 import { useApiContext } from "@/Api";
+import { AppToaster } from "@components";
+import { Intent } from "@blueprintjs/core";
 
 export enum TeamType {
     HOME = 'home',
@@ -12,12 +14,12 @@ export enum Period {
     TWO = 2,
 }
 
-type Skater = {
+export type Skater = {
     number: string,
     name: string,
 }
 
-type TeamRoster = {
+export type TeamRoster = {
     league: string,
     team: string,
     color: string,
@@ -37,8 +39,6 @@ export type ScoreLine = {
     injury: boolean,
     noInitial: boolean,
     trips: string[],
-    jamTotal: string,
-    gameTotal: string,
 }
 
 type ScoreLines = {
@@ -128,6 +128,13 @@ export type Official = {
     certificationLevel: string,
 }
 
+export const DEFAULT_OFFICIAL = (): Official => ({
+    role: '',
+    name: '',
+    league: '',
+    certificationLevel: '',
+});
+
 type Officials = Official[];
 
 export interface GameState {
@@ -173,14 +180,18 @@ interface GameStateContextProps {
     gameState: GameState,
     isLoading: boolean,
     isDirty: boolean,
+    isFaulted: boolean,
+    retryUpload: () => void,
     setGameState: (state: GameState) => void,
 }
 
 const GameContext = createContext<GameStateContextProps>({ 
     gameState: DefaultGameState(),
-    setGameState: () => {},
     isLoading: true,
-    isDirty: false
+    isDirty: false,
+    isFaulted: false,
+    retryUpload: () => {},
+    setGameState: () => {},
  });
 
 export const useGameContext = () => useContext(GameContext);
@@ -189,6 +200,7 @@ export const GameStateContextProvider = ({ children }: PropsWithChildren) => {
     const [state, setState] = useState(DefaultGameState());
     const [isLoading, setIsLoading] = useState(true);
     const [isDirty, setIsDirty] = useState(false);
+    const [isFaulted, setIsFaulted] = useState(false);
     const { api } = useApiContext();
 
     useEffect(() => {
@@ -196,28 +208,37 @@ export const GameStateContextProvider = ({ children }: PropsWithChildren) => {
             setState(game);
             setIsLoading(false);
             setIsDirty(isDefault);
+            setIsFaulted(false);
         })
         .catch(() => {
-            console.log("Failed to load existing document. Setting to default");
             setState(DefaultGameState());
             setIsLoading(false);
             setIsDirty(true);
+            setIsFaulted(true);
         });
     }, [setState, setIsLoading, setIsDirty, api]);
 
     useEffect(() => {
-        const interval = setInterval(() => {
-            if (isDirty) {
-                console.log('Write changes');
-                console.log(JSON.stringify(state));
-                api?.setDocument(state).then(() => {
-                    setIsDirty(false);
-                });
+        const timeout = setTimeout(() => {
+            if (isDirty && !isFaulted) {
+                console.log("Writing");
+                api?.setDocument(state)
+                    .then(() => {
+                        setIsDirty(false);
+                    })
+                    .catch(() => {
+                        setIsFaulted(true);
+                        AppToaster.then(t => t.show({ message: 'Error uploading changes', intent: Intent.DANGER }));
+                    });
             }
-        }, 5000);
+        }, 1500);
 
-        return () => clearInterval(interval);
-    }, [isDirty, setIsDirty, api, state]);
+        return () => clearTimeout(timeout);
+    }, [isDirty, setIsDirty, isFaulted, setIsFaulted, api, state]);
+
+    const retryUpload = useCallback(() => {
+        setIsFaulted(false);
+    }, [setIsFaulted]);
 
     const setAndStoreState = useCallback((state: GameState) => {
         setState(state);
@@ -225,7 +246,7 @@ export const GameStateContextProvider = ({ children }: PropsWithChildren) => {
     }, [setState, setIsDirty]);
 
     return (
-        <GameContext.Provider value={{ gameState: state, setGameState: setAndStoreState, isLoading, isDirty }}>
+        <GameContext.Provider value={{ gameState: state, setGameState: setAndStoreState, isLoading, isDirty, isFaulted, retryUpload }}>
             {children}
         </GameContext.Provider>
     )

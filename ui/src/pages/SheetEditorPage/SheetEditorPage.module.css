@@ -6,3 +6,17 @@
     justify-content: center;
     align-items: center;
 }
+
+.uploadingStatus {
+    animation: blinking 1s linear infinite;
+}
+
+.statusIcon {
+    margin: 0 7px;
+}
+
+@keyframes blinking {
+    50% {
+        opacity: 0.5;
+    }
+}

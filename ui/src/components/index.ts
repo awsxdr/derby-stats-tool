@@ -1,3 +1,4 @@
+export * from './AppToaster';
 export * from './Footer';
 export * from './GameDetailsSheet';
 export * from './LineupContainer';
@@ -7,6 +8,8 @@ export * from './OfficialsRosterSheet';
 export * from './PenaltiesContainer';
 export * from './PenaltyOfficialsSheet';
 export * from './PenaltySheet';
+export * from './PrintableIgrf';
+export * from './PrintableScore';
 export * from './RostersContainer';
 export * from './RosterSheet';
 export * from './ScoreOfficialsSheet';

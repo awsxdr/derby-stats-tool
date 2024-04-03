@@ -2,7 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import { RouterProvider, redirect } from 'react-router';
 
 import { LoginStatus, useUserLoginContext } from "@contexts";
-import { SplashPage, SheetEditorPage, SettingsPage } from "@pages";
+import { SplashPage, SheetEditorPage, SettingsPage, PrintPage } from "@pages";
 
 export const HomePage = () => {
 
@@ -23,6 +23,11 @@ export const HomePage = () => {
             path: '/settings',
             loader: () => getLoginStatus() === LoginStatus.LOGGED_IN ? null : redirect("/"),
             element: <SettingsPage />
+        },
+        {
+            path: '/print',
+            loader: () => getLoginStatus() === LoginStatus.LOGGED_IN ? null : redirect("/"),
+            element: <PrintPage />
         },
     ]);
 

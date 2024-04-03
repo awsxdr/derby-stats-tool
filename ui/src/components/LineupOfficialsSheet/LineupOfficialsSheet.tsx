@@ -40,7 +40,7 @@ export const LineupOfficialsSheet = () => {
                         onNameAdded={handleNameAdded} 
                     />
                 </FormGroup>
-                <FormGroup label='Away team lineup tracker (if different)' fill>
+                <FormGroup label='Away team lineup tracker' fill>
                     <SuggestOfficial 
                         officialNames={officialNames} 
                         value={gameState.lineups[1].away.lineupTracker ?? ''} 
@@ -59,7 +59,7 @@ export const LineupOfficialsSheet = () => {
                         onNameAdded={handleNameAdded} 
                     />
                 </FormGroup>
-                <FormGroup label='Away team lineup tracker (if different)' fill>
+                <FormGroup label='Away team lineup tracker' fill>
                     <SuggestOfficial 
                         officialNames={officialNames} 
                         value={gameState.lineups[2].away.lineupTracker ?? ''} 

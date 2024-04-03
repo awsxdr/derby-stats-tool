@@ -1,0 +1,75 @@
+@import 'Variables';
+
+.team {
+    min-width: 50%;
+    max-width: 50%;
+    display: inline-flex;
+    flex-direction: column;
+}
+
+.columnHead {
+    min-width: 23%;
+    max-width: 23%;
+}
+
+.skaterNameHead {
+    min-width: 54%;
+}
+
+.teamLeague {
+    min-width: 77%;
+}
+
+.teamHead {
+    box-shadow: inset 0 0 0 .4px #000;
+    min-height: $standard-line-height;
+    max-height: $standard-line-height;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.head {
+    font-weight: bold;
+}
+
+.dark {
+    background-color: $dark;
+    color: #000;
+}
+
+.light {
+    background-color: $light;
+    color: #000;
+}
+
+.box {
+    box-shadow: inset 0 0 0 .4px #000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.fillableLine {
+    min-height: $fillable-line-height;
+    max-height: $fillable-line-height;
+    font-size: 7pt;
+}
+
+.row {
+    display: flex;
+}
+
+.rowNumber {
+    font-style: italic;
+}
+
+.skaterNumber {
+    min-width: 23%;
+}
+
+.skaterName {
+    min-width: 54%;
+    text-align: left;
+    padding-left: 5px;
+}

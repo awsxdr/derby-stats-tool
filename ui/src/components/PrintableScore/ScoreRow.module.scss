@@ -1,0 +1,69 @@
+@import './Variables.scss';
+@import './Columns.scss';
+
+.row {
+    display: flex;
+    flex-direction: row;
+    border-top: 0;
+}
+
+.dark {
+    background-color: $dark;
+    color: #000;
+}
+
+.light {
+    background-color: $light;
+    color: #000;
+}
+
+.white {
+    background-color: #fff;
+    color: #000;
+}
+
+.scoreRow {
+    min-height: $fillable-line-height;
+
+    .checkBox {
+        font-size: 12pt;
+    }
+}
+
+.scoreRow>* {
+    @extend .bordered;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    font-size: $score-row-font-size;
+}
+
+.lightRow {
+    .jamNumber {
+        @extend .light;
+    }
+
+    .checkBox {
+        @extend .light;
+    }
+
+    .gameTotal {
+        @extend .dark;
+    }
+}
+
+.darkRow {
+    @extend .light;
+
+    .jamNumber {
+        @extend .dark;
+    }
+
+    .checkBox {
+        @extend .dark;
+    }
+
+    .gameTotal {
+        @extend .dark;
+    }
+}

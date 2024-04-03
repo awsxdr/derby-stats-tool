@@ -1,0 +1,59 @@
+@import 'Variables';
+
+.teamSummary {
+    min-width: 50%;
+    max-width: 50%;
+    display: inline-flex;
+    flex-direction: column;
+}
+
+.teamHead {
+    box-shadow: inset 0 0 0 .4px #000;
+    min-height: $standard-line-height;
+    max-height: $standard-line-height;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.head {
+    font-weight: bold;
+}
+
+.dark {
+    background-color: $dark;
+    color: #000;
+}
+
+.light {
+    background-color: $light;
+    color: #000;
+}
+
+.box {
+    box-shadow: inset 0 0 0 .4px #000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.fillableLine {
+    min-height: $fillable-line-height;
+    max-height: $fillable-line-height;
+    font-size: 7pt;
+}
+
+.item {
+    min-width: 20%;
+    max-width: 20%;
+}
+
+.totals {
+    min-width: 40%;
+    max-width: 40%;
+}
+
+.row {
+    display: flex;
+}
+

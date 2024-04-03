@@ -41,7 +41,7 @@ export const ScoreSheet = ({ teamType, period }: ScoreSheetProps) => {
     
     const calculateGameTotal = useCallback((row: number) =>
         Array.from({ length: row + 1 }).map((_, r) => calculateJamTotal(r)).reduce((p, c) => p + c, previousPeriodTotal),
-        [scores]);
+        [calculateJamTotal, previousPeriodTotal]);
 
     const renderAlternatingColorCell = (cellRenderer: CellRendererFn, lightColor: string, darkColor: string) =>
         (rowIndex: number) => cellRenderer(rowIndex % 2 == 0 ? lightColor : darkColor)(rowIndex);

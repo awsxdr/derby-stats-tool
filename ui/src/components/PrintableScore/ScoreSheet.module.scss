@@ -1,0 +1,142 @@
+@import './Variables.scss';
+@import './Columns.scss';
+
+.scoreSheet {
+    font-size: 6pt;
+    padding: 15mm;
+    page-break-after: always;
+    height: 100%;
+}
+
+.dark {
+    background-color: $dark;
+    color: #000;
+}
+
+.light {
+    background-color: $light;
+    color: #000;
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+    border-top: 0;
+}
+
+.header {
+    min-width: 100%;
+    min-height: $header-height;
+}
+
+.header>* {
+    display: flex;
+    flex-direction: column;
+}
+
+.fillableHeader {
+    border-bottom: 1px solid black;
+    height: 100%;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+}
+
+.headerTitle {
+    font-size: 4pt;
+}
+
+.vertical {
+    text-orientation: mixed;
+    writing-mode: vertical-lr;
+    transform: scale(-1, -1);
+}
+
+.columnHeader {
+    background-color: #000;
+    color: #fff;
+    min-height: $fillable-line-height;
+    font-weight: bold;
+
+    .jammerNumber {
+        font-size: 5pt;
+    }
+
+    .checkBox {
+        @extend .vertical;
+    }
+}
+
+.columnHeader>* {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.teamName {
+    min-width: 30%;
+    max-width: 30%;
+    justify-content: center;
+}
+
+.color {
+    min-width: 14%;
+    max-width: 14%;
+}
+
+.date {
+    min-width: 7%;
+    max-width: 7%;
+}
+
+.keeper {
+    min-width: 21%;
+    max-width: 21%;
+}
+
+.ref {
+    min-width: 21%;
+    max-width: 21%;
+}
+
+.periodNumber {
+    color: #fff;
+    font-size: 12pt;
+    font-weight: bold;
+    justify-content: center;
+    background: $extra-dark;
+    min-width: 7%;
+    max-width: 7%;
+}
+
+.previousPeriodTotal {
+    @extend .dark;
+    @extend .bordered;
+    min-width: 7%;
+    max-width: 7%;
+    font-size: $score-row-font-size;
+}
+
+.totals {
+    @extend .dark;
+    min-height: $fillable-line-height;
+    border-top: 1px solid black;
+
+    .checkBox {
+        font-size: 7pt;
+        margin: 0;
+        padding: 0;
+    }
+
+    .jammerNumber {
+        font-size: 6pt;
+    }
+}
+
+.totals>* {
+    @extend .bordered;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    font-size: $score-row-font-size;
+}

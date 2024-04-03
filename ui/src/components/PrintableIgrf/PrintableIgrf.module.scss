@@ -1,0 +1,216 @@
+@import 'Variables';
+
+.igrf {
+    font-size: 6pt;
+    padding: 15mm;
+    page-break-after: always;
+}
+
+.header {
+    min-width: 100%;
+    box-shadow: inset 0 0 0 1px #000;
+    font-weight: bold;
+    font-size: 8pt;
+    padding: 0;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.sectionHeader {
+    min-width: 100%;
+    box-shadow: inset 0 0 0 1px #000;
+    font-weight: bold;
+    font-size: 7pt;
+    color: $extra-dark;
+    background-color: #000;
+    padding: 0;
+}
+
+.rosterHeader {
+    min-width: 100%;
+    box-shadow: inset 0 0 0 1px #000;
+    font-weight: bold;
+    font-size: 7pt;
+    color: #fff;
+    background-color: #000;
+    padding: 0;
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+    border-top: 0;
+}
+
+.row>div {
+    display: inline-flex;
+    flex-direction: column;
+}
+
+.line {
+    min-height: $standard-line-height;
+    max-height: $standard-line-height;
+}
+
+.fillableLine {
+    min-height: $fillable-line-height;
+    max-height: $fillable-line-height;
+    font-size: 7pt;
+}
+
+.box {
+    box-shadow: inset 0 0 0 .4px #000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.dark {
+    background-color: $dark;
+    color: #000;
+}
+
+.light {
+    background-color: $light;
+    color: #000;
+}
+
+.columnHead {
+    min-width: 11.5%;
+    justify-content: center;
+    font-size: 7pt;
+}
+
+.head {
+    font-weight: bold;
+}
+
+.venueBox {
+    min-width: 50%;
+}
+
+.cityBox {
+    min-width: 21%;
+}
+
+.state {
+    min-width: 8.5%;
+}
+
+.gameNumber {
+    min-width: 9%;
+}
+
+.tournament {
+    min-width: 50%;
+}
+
+.hostLeague {
+    min-width: 38.5%;
+}
+
+.date {
+    min-width: 38.5%;
+}
+
+.startTime {
+    min-width: 21%;
+}
+
+.suspensionHead {
+    min-width: 8.5%;
+}
+
+.suspension {
+    min-width: 9%;
+}
+
+.teamsContainer {
+    min-width: 100%;
+    box-shadow: inset 0 0 0 .4px #000;
+}
+
+.teamSummaryContainer {
+    min-width: 100%;
+    box-shadow: inset 0 0 0 .4px #000;
+}
+
+.adjustmentRequired {
+    min-width: 30%;
+    max-width: 30%;
+    font-weight: bold;
+    font-size: 5.5pt;
+}
+
+.adjustmentRequiredValue {
+    min-width: 10%;
+    max-width: 10%;
+}
+
+.adjustmentReason {
+    min-width: 20%;
+    max-width: 20%;
+    font-weight: bold;
+    font-size: 5.5pt;
+}
+
+.adjustmentReasonValue {
+    min-width: 40%;
+    max-width: 40%;
+}
+
+.expulsionNotes {
+    min-width: 20%;
+    max-width: 20%;
+    text-align: left;
+    padding-left: 5px;
+    font-size: 6pt;
+    font-weight: bold;
+}
+
+.suspensionServedBy {
+    min-width: 20%;
+    max-width: 20%;
+    text-align: right;
+    padding-right: 5px;
+    font-size: 6pt;
+    font-weight: bold;
+}
+
+.suspensionServedByValue {
+    min-width: 60%;
+    max-width: 60%;
+}
+
+.expulsionLine {
+    min-height: 2.5vh;
+    max-height: 2.5vh;
+    box-shadow: inset 0 0 0 .4px #000;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+}
+
+.expulsionLine * {
+    flex-basis: auto;
+}
+
+.expulsionHead {
+    flex-grow: 1;
+    text-align: left;
+    margin: 2px;
+}
+
+.expulsionSuspensionContainer {
+    min-height: 1.2vh;
+    box-shadow: inset 0 0 0 .4px #000;
+    min-width: 20%;
+    display: flex;
+    flex-direction: row !important;
+    justify-self: flex-end;
+}
+
+.expulsionSuspensionContainer div {
+    box-shadow: inset 0 0 0 .4px #000;
+    min-height: 100%;
+    min-width: 50%;
+}

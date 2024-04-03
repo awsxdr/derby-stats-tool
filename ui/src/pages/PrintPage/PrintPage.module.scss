@@ -1,0 +1,41 @@
+.printContainer {
+    padding: 0;
+    margin: 0;
+    background-color: #bbb;
+    text-align: center;
+}
+
+.loadingContainer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    background-color: #bbb;
+}
+
+.printPages {
+    width: 210mm;
+    padding: 0;
+    margin: auto;
+    background-color: #fff;
+}
+
+.print {
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+}
+
+.print>* {
+    @media screen {
+        border-bottom: 5px solid #bbb;
+        min-height: 297mm;
+    }
+}
+
+.print>*:last-child {
+    page-break-after: avoid;
+}

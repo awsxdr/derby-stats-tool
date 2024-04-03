@@ -1,0 +1,50 @@
+.jamNumber {
+    min-width: 4%;
+    max-width: 4%;
+}
+
+.jammerNumber {
+    min-width: 9%;
+    max-width: 9%;
+}
+
+.checkBox {
+    min-width: 2%;
+    max-width: 2%;
+}
+
+.lost {
+    @extend .checkBox;
+}
+
+.lead {
+    @extend .checkBox;
+}
+
+.call {
+    @extend .checkBox;
+}
+
+.injury {
+    @extend .checkBox;
+}
+
+.noInitial {
+    @extend .checkBox;
+}
+
+.trip {
+    min-width: 7%;
+    max-width: 7%;
+}
+
+.jamTotal {
+    min-width: 7%;
+    max-width: 7%;
+    border-left: 1px solid black;
+}
+
+.gameTotal {
+    min-width: 7%;
+    max-width: 7%;
+}

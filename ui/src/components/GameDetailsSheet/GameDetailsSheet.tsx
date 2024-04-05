@@ -1,4 +1,4 @@
-import { FormGroup, InputGroup, NumericInput } from "@blueprintjs/core";
+import { FormGroup, InputGroup } from "@blueprintjs/core";
 import { DateInput3 } from "@blueprintjs/datetime2";
 import moment from 'moment';
 
@@ -28,7 +28,7 @@ export const GameDetailsSheet = () => {
                 <InputGroup id="state-input" fill value={gameState.game.state} onValueChange={updateState((g, v) => g.state = v)} />
             </FormGroup>
             <FormGroup label="Game #" labelFor="game-number-input" fill>
-                <NumericInput id="game-number-input" min={1} value={gameState.game.gameNumber} onValueChange={(_, value) => updateState((g, v) => g.gameNumber = v)(value)} />
+                <InputGroup id="game-number-input" value={gameState.game.gameNumber} onValueChange={updateState((g, v) => g.gameNumber = v)} />
             </FormGroup>
             <FormGroup label="Tournament name" labelFor="tournament-input" fill>
                 <InputGroup id="tournament-input" fill value={gameState.game.tournament} onValueChange={updateState((g, v) => g.tournament = v)} />

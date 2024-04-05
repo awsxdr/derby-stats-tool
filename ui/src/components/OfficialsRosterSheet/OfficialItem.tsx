@@ -1,4 +1,4 @@
-import { MouseEventHandler, useCallback } from "react";
+import { KeyboardEvent, MouseEventHandler, useCallback, useRef, useState } from "react";
 import { Button, Card, ControlGroup, FormGroup, InputGroup, MenuItem } from "@blueprintjs/core";
 import { ItemPredicate, ItemRendererProps, Suggest } from "@blueprintjs/select";
 
@@ -8,27 +8,52 @@ import { Role } from "./Role";
 import styles from './OfficialsRosterSheet.module.scss';
 
 interface OfficialItemProps {
-    index: number,
-    roles: Role[],
-    official: Official,
-    onRoleChange: (role: Role, index: number) => void,
-    onNameChange: (name: string, index: number) => void,
-    onLeagueChange: (league: string, index: number) => void,
-    onCertificationLevelChange: (certificationLevel: string, index: number) => void,
-    onRoleAdded: (value: string) => string,
-    onDelete: (key: number) => void,
+    index: number;
+    roles: Role[];
+    official: Official;
+    onRoleChange: (role: Role, index: number) => void;
+    onNameChange: (name: string, index: number) => void;
+    onLeagueChange: (league: string, index: number) => void;
+    onCertificationLevelChange: (certificationLevel: string, index: number) => void;
+    onRoleAdded: (value: string) => string;
+    onDelete: (key: number) => void;
+    onAddNewItem: () => void;
 }
 
-export const OfficialItem = ({ roles, official, index, onRoleChange, onNameChange, onLeagueChange, onCertificationLevelChange, onRoleAdded, onDelete }: OfficialItemProps) => {
+export const OfficialItem = ({ 
+        roles, 
+        official, 
+        index, 
+        onRoleChange,
+        onNameChange, 
+        onLeagueChange, 
+        onCertificationLevelChange, 
+        onRoleAdded, 
+        onDelete,
+        onAddNewItem,
+    }: OfficialItemProps) => {
+
+    const [selectedItemName, setSelectedItemName] = useState(roles[0].name);
+    const nameInputRef = useRef<HTMLInputElement>(null);
 
     const handleDelete = useCallback(() => {
         onDelete(index);
     }, [index, onDelete])
 
-    const renderItem = (item: Role, props: ItemRendererProps<HTMLLIElement>) =>
+    const renderItem = useCallback((item: Role, props: ItemRendererProps<HTMLLIElement>) =>
         props.modifiers.matchesPredicate && (
-            <MenuItem key={item.name} text={item.name} roleStructure='listoption' onClick={props.handleClick} onFocus={props.handleFocus} {...props} />
-        ) || null;
+            <MenuItem 
+                key={item.name} 
+                text={item.name} 
+                roleStructure='listoption' 
+                active={props.modifiers.active}
+                selected={item.name === selectedItemName}
+                onClick={props.handleClick} 
+                onFocus={props.handleFocus} 
+                {...props} 
+            />
+        ) || null, 
+        [selectedItemName]);
 
     const filterRoles: ItemPredicate<Role> = (query, role, _, exactMatch) => {
         if (exactMatch) {
@@ -41,7 +66,9 @@ export const OfficialItem = ({ roles, official, index, onRoleChange, onNameChang
     }
 
     const handleItemSelect = useCallback((role: Role) => {
+        setSelectedItemName(role.name);
         onRoleChange(role, index);
+        nameInputRef.current?.focus();
     }, [onRoleChange, index]);
 
     const handleNameChange = useCallback((name: string) => {
@@ -70,9 +97,16 @@ export const OfficialItem = ({ roles, official, index, onRoleChange, onNameChang
                 roleStructure='listoption' 
                 active={active} 
                 onClick={handleAddRole} 
-                shouldDismissPopover={false} />
+                shouldDismissPopover={false}
+            />
         )
     }, [onRoleAdded]);
+
+    const handleInputKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
+        if(e.code === 'Enter' && !e.altKey && !e.ctrlKey && !e.shiftKey) {
+            onAddNewItem();
+        }
+    }
 
     return (
         <Card key={index}>
@@ -82,7 +116,8 @@ export const OfficialItem = ({ roles, official, index, onRoleChange, onNameChang
                         items={roles}
                         itemsEqual={(l, r) => l.name.toLowerCase() === r.name.toLowerCase()}
                         itemPredicate={filterRoles}
-                        itemRenderer={renderItem} 
+                        itemRenderer={renderItem}
+                        inputProps={{ autoFocus: true }}
                         inputValueRenderer={s => s.name}
                         createNewItemFromQuery={s => ({ name: s })}
                         createNewItemRenderer={renderCreateButton}
@@ -91,19 +126,20 @@ export const OfficialItem = ({ roles, official, index, onRoleChange, onNameChang
                         onItemSelect={handleItemSelect}
                         query={official.role}
                         selectedItem={roles.find(r => r.name === official.role)}
+                        popoverProps={{ matchTargetWidth: true, minimal: true }}
                     />
                 </FormGroup>
                 <FormGroup label="Name" fill>
-                    <InputGroup value={official.name} onValueChange={handleNameChange} />
+                    <InputGroup value={official.name} onValueChange={handleNameChange} onKeyDown={handleInputKeyPress} inputRef={nameInputRef} />
                 </FormGroup>
                 <FormGroup label="League affiliation" fill>
-                    <InputGroup value={official.league} onValueChange={handleLeagueChange} />
+                    <InputGroup value={official.league} onValueChange={handleLeagueChange} onKeyDown={handleInputKeyPress} />
                 </FormGroup>
                 <FormGroup label="Certification level" fill>
-                    <InputGroup value={official.certificationLevel} onValueChange={handleCertificationChange} />
+                    <InputGroup value={official.certificationLevel} onValueChange={handleCertificationChange} onKeyDown={handleInputKeyPress} />
                 </FormGroup>
             </ControlGroup>
             <Button icon='trash' minimal onClick={handleDelete} />
         </Card>
-    )
+)
 }

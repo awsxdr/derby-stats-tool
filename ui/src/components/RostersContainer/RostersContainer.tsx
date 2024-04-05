@@ -5,7 +5,7 @@ import classNames from "classnames";
 import { GameDetailsSheet, OfficialsRosterSheet, RosterSheet } from "@components";
 import { TeamType } from "@/contexts";
 
-import sharedStyles from '@/Shared.module.css';
+import sharedStyles from '@/Shared.module.scss';
 
 export const RostersContainer = () => {
     const [selectedTab, setSelectedTab] = useState<TabId>('game');

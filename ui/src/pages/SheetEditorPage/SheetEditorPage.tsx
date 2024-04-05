@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Alert, Alignment, Button, Card, Icon, Intent, Menu, MenuDivider, MenuItem, Navbar, Overlay2, Popover, Spinner, Tab, TabId, Tabs, Tooltip } from '@blueprintjs/core'
 
@@ -6,8 +6,7 @@ import { AppToaster, Footer, LineupContainer, PenaltiesContainer, RostersContain
 import { DefaultGameState, useGameContext, useUserInfoContext, useUserLoginContext } from '@contexts';
 import { useApiContext } from '@/Api';
 
-import sharedStyles from '@/Shared.module.css';
-import styles from './SheetEditorPage.module.css';
+import styles from './SheetEditorPage.module.scss';
 import classNames from 'classnames';
 
 export const SheetEditorPage = () => {
@@ -21,19 +20,21 @@ export const SheetEditorPage = () => {
     const { user } = useUserInfoContext();
     const { api } = useApiContext();
     const navigate = useNavigate();
+
+    const showSpinner = useMemo(() => !user || isLoading, [user, isLoading]);
   
     const handleTabChange = (tabId: TabId) => {
-      setSelectedTab(tabId);
+        setSelectedTab(tabId);
     }
   
     const confirmNew = useCallback(() => {
-      setIsConfirmNewOpen(true);
+        setIsConfirmNewOpen(true);
     }, [setIsConfirmNewOpen]);
   
     const handleConfirmNewCancel = useCallback(() => setIsConfirmNewOpen(false), [setIsConfirmNewOpen]);
     const handleConfirmNewConfirm = useCallback(() => {
-      setGameState(DefaultGameState());
-      setIsConfirmNewOpen(false);
+        setGameState(DefaultGameState());
+        setIsConfirmNewOpen(false);
     }, [setGameState, setIsConfirmNewOpen]);
 
     const closeWarnNoBlankStats = useCallback(() => setIsWarnNoBlankStatsOpen(false), [setIsWarnNoBlankStatsOpen]);
@@ -63,7 +64,7 @@ export const SheetEditorPage = () => {
     return (
         <>
             <Navbar fixedToTop>
-                <Navbar.Group align={Alignment.LEFT} className={sharedStyles.logo}>
+                <Navbar.Group align={Alignment.LEFT} className={styles.logo}>
                     <Navbar.Heading>DerbyStats</Navbar.Heading>
                     <Navbar.Divider />
                 </Navbar.Group>
@@ -95,7 +96,7 @@ export const SheetEditorPage = () => {
                         id='MainTabs' 
                         onChange={handleTabChange} 
                         selectedTabId={selectedTab} 
-                        className={sharedStyles.scrollableTabBar} 
+                        className={styles.scrollableTabBar} 
                         renderActiveTabPanelOnly 
                         large 
                         fill
@@ -107,7 +108,7 @@ export const SheetEditorPage = () => {
                     </Tabs>
                 }
             </Navbar>
-            <Overlay2 isOpen={!user}>
+            <Overlay2 isOpen={showSpinner}>
                 <div>
                     <div className={styles.loadingContainer}>
                         <Card>

@@ -41,7 +41,7 @@ export type ScoreLine = {
     trips: string[],
 }
 
-type ScoreLines = {
+export type ScoreLines = {
     scorekeeper: string,
     jammerRef: string,
     lines: ScoreLine[],
@@ -76,7 +76,7 @@ const DEFAULT_PENALTY_LINES = (): PenaltyLines => ({
 type PeriodPenalties = { [team in TeamType]: PenaltyLines };
 type Penalties = { [period in Period]: PeriodPenalties };
 
-type LineupItem = {
+export type LineupItem = {
     number: string,
     events: string[],
 };
@@ -198,12 +198,13 @@ export const useGameContext = () => useContext(GameContext);
 
 export const GameStateContextProvider = ({ children }: PropsWithChildren) => {
     const [state, setState] = useState(DefaultGameState());
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const [isDirty, setIsDirty] = useState(false);
     const [isFaulted, setIsFaulted] = useState(false);
     const { api } = useApiContext();
 
     useEffect(() => {
+        setIsLoading(true);
         api?.getDocument().then(({ game, isDefault }) => {
             setState(game);
             setIsLoading(false);

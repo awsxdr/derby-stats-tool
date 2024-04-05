@@ -2,10 +2,11 @@ import { ReactElement, useCallback, useMemo } from 'react';
 import { Cell, Column, ColumnHeaderCell, EditableCell2, Table2 } from '@blueprintjs/table'
 
 import { Penalty, PenaltyLine, Period, TeamType, useGameContext } from '@contexts';
-
-import styles from './PenaltySheet.module.css';
-import { StatsTable } from '..';
+import { StatsTable } from '@components';
 import { range } from '@/rangeMethods';
+import { OK, usePenaltyValidator } from '@validators';
+
+import styles from './PenaltySheet.module.scss';
 
 type ContentRendererFn = (rowIndex: number) => ReactElement;
 type CellRendererFn = (color: string) => ContentRendererFn;
@@ -32,16 +33,18 @@ export const PenaltySheet = ({ teamType, period }: PenaltySheetProps) => {
             period === Period.TWO && gameState.penalties[Period.ONE][teamType].lines.length >= i && gameState.penalties[Period.ONE][teamType].lines[i]
             ? gameState.penalties[Period.ONE][teamType].lines[i].filter(c => c && c.code.trim().length > 0).length
             : 0),
-        [penalties, period, gameState, teamType]);
+        [period, gameState, teamType]);
 
     const DEFAULT_PENALTY: () => Penalty = () => ({ code: '', jam: '' });
-    const DEFAULT_PENALTY_LINE: () => PenaltyLine = () => Array.from({ length: 10 }, DEFAULT_PENALTY);
+    const DEFAULT_PENALTY_LINE: () => PenaltyLine = useCallback(() => Array.from({ length: 10 }, DEFAULT_PENALTY), []);
 
-    const createPenaltyLineIfMissing = (rowIndex: number) => {
+    const validity = usePenaltyValidator(period, teamType);
+
+    const createPenaltyLineIfMissing = useCallback((rowIndex: number) => {
         if(!penalties[rowIndex]) {
             penalties[rowIndex] = DEFAULT_PENALTY_LINE();
         }
-    }
+    }, [DEFAULT_PENALTY_LINE, penalties]);
 
     const updateGameState = () => {
         setGameState({ 
@@ -65,10 +68,15 @@ export const PenaltySheet = ({ teamType, period }: PenaltySheetProps) => {
         updateGameState();
     }
 
+    const getValidity = useCallback((row: number, column: number) =>
+        (validity.lines[row] && validity.lines[row][column]) ?? OK, [validity]);
+
     const renderPenaltyCodeCell = (column: number, row: number, color: string) => (
         <EditableCell2
             style={{ backgroundColor: color }}
             value={penalties[row] && penalties[row][column]?.code}
+            tooltip={getValidity(row, column)?.code?.message}
+            className={styles[`validity-${getValidity(row, column)?.code?.validity}`]}
             onConfirm={handleChange<string>(row, column, (l, v) => l.code = v)}
         />
     );
@@ -77,6 +85,8 @@ export const PenaltySheet = ({ teamType, period }: PenaltySheetProps) => {
         <EditableCell2
             style={{ backgroundColor: color }}
             value={penalties[row] && penalties[row][column]?.jam}
+            tooltip={getValidity(row, column)?.jam?.message}
+            className={styles[`validity-${getValidity(row, column)?.jam?.validity}`]}
             onConfirm={handleChange<string>(row, column, (l, v) => l.jam = v)}
         />
     );

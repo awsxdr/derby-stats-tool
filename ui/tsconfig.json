@@ -25,11 +25,9 @@
       "@": ["src"],
       "@/*": ["src/*"],
       "@components": ["src/components"],
-      "@components/*": ["src/components"],
       "@contexts": ["src/contexts"],
-      "@contexts/*": ["src/contexts/*"],
       "@pages": ["src/pages"],
-      "@pages/*": ["src/pages/*"]
+      "@validators": ["src/validators"],
     }
   },
   "include": ["src"],

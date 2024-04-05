@@ -4,7 +4,7 @@ import { Card, CardList, FormGroup } from "@blueprintjs/core";
 import { SuggestOfficial } from "@components";
 import { Period, TeamType, useGameContext } from "@contexts";
 
-import sharedStyles from '@/Shared.module.css';
+import sharedStyles from '@/Shared.module.scss';
 
 export const PenaltyOfficialsSheet = () => {
     const { gameState, setGameState } = useGameContext();

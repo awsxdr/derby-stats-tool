@@ -6,8 +6,7 @@ import { useUserInfoContext } from "@contexts";
 
 import { useApiContext } from "@/Api";
 
-import sharedStyles from '@/Shared.module.css';
-import styles from './SettingsPage.module.css';
+import styles from './SettingsPage.module.scss';
 import { AppToaster } from "@/components/AppToaster";
 
 export const SettingsPage = () => {
@@ -75,7 +74,7 @@ export const SettingsPage = () => {
     return (
         <>
             <Navbar fixedToTop>
-                <Navbar.Group align={Alignment.LEFT} className={sharedStyles.logo}>
+                <Navbar.Group align={Alignment.LEFT} className={styles.logo}>
                     <Navbar.Heading>DerbyStats</Navbar.Heading>
                     <Navbar.Divider />
                 </Navbar.Group>

@@ -5,7 +5,7 @@ import classNames from "classnames";
 import { ScoreSheet, ScoreOfficialsSheet } from "@components";
 import { TeamType } from "@contexts";
 
-import sharedStyles from '@/Shared.module.css';
+import sharedStyles from '@/Shared.module.scss';
 
 export const ScoreSheetsContainer = () => {
     const [selectedTab, setSelectedTab] = useState<TabId>('p1home');

@@ -5,7 +5,7 @@ import classNames from "classnames";
 import { PenaltyOfficialsSheet, PenaltySheet } from "@components";
 import { TeamType } from '@contexts';
 
-import sharedStyles from '@/Shared.module.css';
+import sharedStyles from '@/Shared.module.scss';
 
 export const PenaltiesContainer = () => {
     const [selectedTab, setSelectedTab] = useState<TabId>('p1home');

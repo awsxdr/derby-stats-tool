@@ -1,0 +1,49 @@
+.scrollableTabBar {
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.subNavBar {
+    top: 50px !important;
+}
+
+.tableContainer {
+    position: absolute;
+    top: 100px;
+    bottom: 0;
+    overflow: auto;
+    height: calc(100vh - 150px);
+    padding: 20px;
+    left: 0;
+    right: 0;
+    text-align: center;
+}
+
+// .tableContainer>div {
+//     height: 100%;
+// }
+
+// .tableContainer :global(.bp5-table-container) {
+//     box-shadow: none;
+// }
+
+// .tableContainer :global(.bp5-table-quadrant-scroll-container) {
+//     background: #fff;
+// }
+
+.logo {
+    display: auto;
+    @media screen and (max-width: 600px) {
+        display: none !important;
+    }
+}
+
+.officialsList {
+    max-width: 700px;
+    margin: auto;
+}
+
+.periodCard {
+    flex-direction: column;
+    text-align: left;
+}

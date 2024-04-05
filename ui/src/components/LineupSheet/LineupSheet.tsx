@@ -3,8 +3,10 @@ import { Cell, Column, ColumnHeaderCell, EditableCell2 } from '@blueprintjs/tabl
 
 import { StatsTable, ToggleCell } from '@components'
 import { LineupLine, Period, SkaterType, TeamType, useGameContext } from '@contexts';
+import { OK, Validity, useLineupValidator } from '@validators';
 
 import styles from './LineupSheet.module.css';
+import classNames from 'classnames';
 
 type ContentRendererFn = (rowIndex: number) => ReactElement;
 type CellRendererFn = (color: string) => ContentRendererFn;
@@ -26,6 +28,8 @@ export const LineupSheet = ({ teamType, period }: LineupSheetProps) => {
     const lineups = useMemo(() => gameState.lineups[period][teamType].lines, [gameState, period, teamType]);
     const scores = useMemo(() => gameState.scores[period][teamType].lines, [gameState, period, teamType]);
 
+    const validity = useLineupValidator(period, teamType);
+
     const renderAlternatingColorCell = (cellRenderer: CellRendererFn, lightColor: string, darkColor: string) =>
         (rowIndex: number) => cellRenderer(rowIndex % 2 == 0 ? lightColor : darkColor)(rowIndex);
   
@@ -44,11 +48,11 @@ export const LineupSheet = ({ teamType, period }: LineupSheetProps) => {
         }
     });
 
-    const createLineupLineIfMissing = (rowIndex: number) => {
+    const createLineupLineIfMissing = useCallback((rowIndex: number) => {
         if(!lineups[rowIndex]) {
             lineups[rowIndex] = DEFAULT_LINEUP_LINE();
         }
-    }
+    }, [lineups]);
 
     const updateGameState = () => {
         setGameState({ 
@@ -73,7 +77,11 @@ export const LineupSheet = ({ teamType, period }: LineupSheetProps) => {
     }
 
     const renderJamNumberCell = (color: string) => (rowIndex: number) => (
-        <Cell style={{ backgroundColor: color }}>
+        <Cell 
+            style={{ backgroundColor: color }}
+            tooltip={validity.lines[rowIndex]?.jamNumber.message}
+            className={styles[`validity-${validity.lines[rowIndex]?.jamNumber.validity}`]}
+        >
             { scores[rowIndex]?.jam }
         </Cell>
     );
@@ -82,12 +90,18 @@ export const LineupSheet = ({ teamType, period }: LineupSheetProps) => {
         <ToggleCell
             style={{ backgroundColor: color }}
             value={lineups[rowIndex]?.noPivot}
+            tooltip={validity.lines[rowIndex]?.noPivot.message}
+            className={styles[`validity-${validity.lines[rowIndex]?.noPivot.validity}`]}
             onConfirm={handleChange<boolean>((l, v) => l.noPivot = v)(rowIndex)}
         />
     );
 
     const renderReadOnlySkaterNumberCell = (skaterType: SkaterType) => (color: string) => (rowIndex: number) => (
-        <Cell style={{ backgroundColor: color }}>
+        <Cell 
+            style={{ backgroundColor: color }}
+            tooltip={validity.lines[rowIndex]?.skaters[skaterType].number.message}
+            className={styles[`validity-${validity.lines[rowIndex]?.skaters[skaterType].number.validity}`]}
+        >
             {lineups[rowIndex]?.skaters[skaterType].number}
         </Cell>
     );
@@ -96,15 +110,23 @@ export const LineupSheet = ({ teamType, period }: LineupSheetProps) => {
         <EditableCell2
             style={{ backgroundColor: color }}
             value={lineups[rowIndex]?.skaters[skaterType].number}
+            tooltip={validity.lines[rowIndex]?.skaters[skaterType].number.message}
+            className={styles[`validity-${validity.lines[rowIndex]?.skaters[skaterType].number.validity}`]}
             onConfirm={handleChange<string>((l, v) => l.skaters[skaterType].number = v)(rowIndex)}
         />
     );
 
+    const getEvent = (rowIndex: number, skaterType: SkaterType, eventNumber: number): Validity =>
+        validity.lines[rowIndex]?.skaters[skaterType]?.events?.length > eventNumber
+        ? validity.lines[rowIndex]?.skaters[skaterType]?.events[eventNumber]
+        : OK;
+
     const renderSkaterEventCell = (skaterType: SkaterType, eventNumber: number) => (color: string) => (rowIndex: number) => (
         <EditableCell2
             style={{ backgroundColor: color }}
-            className={styles.lineupEvent}
             value={lineups[rowIndex]?.skaters[skaterType].events[eventNumber]}
+            tooltip={getEvent(rowIndex, skaterType, eventNumber).message}
+            className={classNames(styles.lineupEvent, styles[`validity-${getEvent(rowIndex, skaterType, eventNumber).validity}`])}
             onConfirm={handleChange<string>((l, v) => l.skaters[skaterType].events[eventNumber] = v.substring(0, 1))(rowIndex)}
         />
     );
@@ -199,7 +221,7 @@ export const LineupSheet = ({ teamType, period }: LineupSheetProps) => {
                 skater.events[eventIndex] = '';
             }
         }
-    }, []);
+    }, [lineups]);
 
     return (
       <div className={styles.lineupTable}>

@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Card, CardList, FormGroup } from "@blueprintjs/core";
 
 import { SuggestOfficial } from "@components";
 import { Period, TeamType, useGameContext } from "@contexts"
 
-import sharedStyles from '@/Shared.module.css';
+import sharedStyles from '@/Shared.module.scss';
 
 export const LineupOfficialsSheet = () => {
     const { gameState, setGameState } = useGameContext();
@@ -13,7 +13,7 @@ export const LineupOfficialsSheet = () => {
 
     const handleNameAdded = (name: string) => setOfficialNames([...officialNames, name]);
 
-    const setOfficial = (period: Period, team: TeamType) => (name: string) => 
+    const setOfficial = useCallback((period: Period, team: TeamType) => (name: string) => 
         setGameState({ 
             ...gameState, 
             lineups: { 
@@ -26,7 +26,7 @@ export const LineupOfficialsSheet = () => {
                     } 
                 }
             }
-        });
+        }), [gameState, setGameState]);
 
     return (
         <CardList className={sharedStyles.officialsList}>
@@ -35,7 +35,7 @@ export const LineupOfficialsSheet = () => {
                 <FormGroup label='Home team lineup tracker' fill>
                     <SuggestOfficial 
                         officialNames={officialNames} 
-                        value={gameState.lineups[1].home.lineupTracker ?? ''} 
+                        value={gameState.lineups[Period.ONE].home.lineupTracker ?? ''} 
                         onChange={setOfficial(Period.ONE, TeamType.HOME)} 
                         onNameAdded={handleNameAdded} 
                     />
@@ -43,7 +43,7 @@ export const LineupOfficialsSheet = () => {
                 <FormGroup label='Away team lineup tracker' fill>
                     <SuggestOfficial 
                         officialNames={officialNames} 
-                        value={gameState.lineups[1].away.lineupTracker ?? ''} 
+                        value={gameState.lineups[Period.ONE].away.lineupTracker ?? ''} 
                         onChange={setOfficial(Period.ONE, TeamType.AWAY)} 
                         onNameAdded={handleNameAdded} 
                     />
@@ -54,7 +54,7 @@ export const LineupOfficialsSheet = () => {
                 <FormGroup label='Home team lineup tracker' fill>
                     <SuggestOfficial 
                         officialNames={officialNames} 
-                        value={gameState.lineups[2].home.lineupTracker ?? ''} 
+                        value={gameState.lineups[Period.TWO].home.lineupTracker ?? ''} 
                         onChange={setOfficial(Period.TWO, TeamType.HOME)} 
                         onNameAdded={handleNameAdded} 
                     />
@@ -62,7 +62,7 @@ export const LineupOfficialsSheet = () => {
                 <FormGroup label='Away team lineup tracker' fill>
                     <SuggestOfficial 
                         officialNames={officialNames} 
-                        value={gameState.lineups[2].away.lineupTracker ?? ''} 
+                        value={gameState.lineups[Period.TWO].away.lineupTracker ?? ''} 
                         onChange={setOfficial(Period.TWO, TeamType.AWAY)} 
                         onNameAdded={handleNameAdded} 
                     />

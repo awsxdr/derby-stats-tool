@@ -1,0 +1,13 @@
+.validity-error {
+    background: repeating-linear-gradient(-45deg, #fdd 0px, #fdd 3px, #fbb 3px, #fbb 6px);
+    color: #800;
+}
+
+.validity-warning {
+    background: repeating-linear-gradient(45deg, #ffc 0px, #ffc 3px, #ff8 3px, #ff8 6px);
+    color: #aa0;
+}
+
+.validity-info {
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 80%, rgba(80, 100, 255, 0.5) 100%);
+}

@@ -1,6 +1,8 @@
 import { PropsWithChildren, createContext, useCallback, useContext, useEffect, useState } from "react";
 import { LoginStatus, useUserLoginContext } from "./UserLoginContext";
 import { useApiContext } from "@/Api";
+import { AppToaster } from "@/components";
+import { Intent } from "@blueprintjs/core";
 
 type BlankStatsBookDetails = {
     filename: string,
@@ -33,11 +35,9 @@ export const UserInfoContextProvider = ({ children }: PropsWithChildren) => {
 
     const { api } = useApiContext();
 
-    const { getToken, getLoginStatus } = useUserLoginContext();
+    const { token, loginStatus } = useUserLoginContext();
 
     const getUserData = useCallback(async () => {
-        const token = await getToken();
-
         const userInfoResponse = await fetch('https://auth.awsxdr.com/oauth2/userInfo', {
             method: 'GET',
             headers: [
@@ -46,6 +46,7 @@ export const UserInfoContextProvider = ({ children }: PropsWithChildren) => {
         });
 
         if (!userInfoResponse.ok) {
+            (await AppToaster).show({ message: 'Failed to retrieve user data. Please refresh the page', intent: Intent.DANGER });
             return;
         }
 
@@ -56,16 +57,20 @@ export const UserInfoContextProvider = ({ children }: PropsWithChildren) => {
             email: info.email,
             blankStatsbooks: (await api?.getBlankStatsBooks() ?? []).map(s => ({ filename: s, id: '' })),
         });
-    }, [getToken, setUser, api]);
+    }, [token, setUser, api]);
 
     useEffect(() => {
-        if(getLoginStatus() !== LoginStatus.LOGGED_IN) {
+        if(loginStatus !== LoginStatus.LOGGED_IN) {
             setUser(undefined);
             return;
         }
 
-        getUserData();
-    }, [getLoginStatus, setUser, getUserData]);
+        if (token) {
+            getUserData();
+        }
+    }, [token, loginStatus, setUser, getUserData]);
+
+    console.log("Setting user value");
 
     return (
         <UserInfoContext.Provider value={{ user }}>

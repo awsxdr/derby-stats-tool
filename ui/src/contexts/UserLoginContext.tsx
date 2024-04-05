@@ -23,17 +23,19 @@ export const DefaultLoginState = (): LoginState => ({
 });
 
 interface UserLoginContextProps {
-    getLoginStatus: () => LoginStatus,
+    loginStatus: LoginStatus,
     startLogin: () => void,
+    startRegister: () => void,
     logout: () => void,
-    getToken: () => Promise<string>,
+    token?: string;
 }
 
 const UserLoginContext = createContext<UserLoginContextProps>({ 
-    getLoginStatus: () => LoginStatus.INDETERMINATE,
+    loginStatus: LoginStatus.INDETERMINATE,
     startLogin: () => {},
+    startRegister: () => {},
     logout: () => {},
-    getToken: () => Promise.resolve(""),
+    token: "",
  });
 
 export const useUserLoginContext = () => useContext(UserLoginContext);
@@ -78,7 +80,7 @@ const getTokenFromCode = async (code: string): Promise<TokenResponse> => {
     return { id_token: '', access_token: '', refresh_token: '', expires_in: 0 };
 }
 
-const refreshToken = async (token: string): Promise<TokenResponse> => {
+const requestTokenRefresh = async (token: string): Promise<TokenResponse> => {
     const formData = new URLSearchParams();
     formData.append("grant_type", "refresh_token");
     formData.append("refresh_token", token);
@@ -112,28 +114,29 @@ const revokeTokens = async (refreshToken: string) => {
     });
 }
 
+const generateChallenge = () => {
+    const verifier = generateRandomKey(Math.floor(Math.random() * 256) + 256);
+    const hash = sha256.array(verifier);
+    const challenge = Base64.fromUint8Array(new Uint8Array(hash)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+
+    return [verifier, challenge];
+}
+
 export const UserLoginContextProvider = ({ children }: PropsWithChildren) => {
-    const [state, setState] = useState(DefaultLoginState());
+    const [token, setToken] = useState<string>();
+    const [refreshToken, setRefreshToken] = useState<string>();
+    const [expiryDate, setExpiryDate] = useState(0);
+    const [isLoading, setIsLoading] = useState(true);
+
     const [loginStatus, setLoginStatus] = useState(LoginStatus.INDETERMINATE);
 
-    const setAndStoreState = useCallback((newState: (current: LoginState) => LoginState) => {
-        setState(current => {
-            const state = newState(current);
-            setCookie("user", JSON.stringify(state), { sameSite: "Strict" });
-
-            return state;
-        } );
-    }, [setState]);
-
     const startLogin = useCallback(() => {
-        const verifier = generateRandomKey(Math.floor(Math.random() * 256) + 256);
-        const hash = sha256.array(verifier);
-        const challenge = Base64.fromUint8Array(new Uint8Array(hash)).replace('+', '-').replace('/', '_').replace('=', '');
 
+        const [verifier, challenge] = generateChallenge();
         setCookie("verifier", verifier);
         setLoginStatus(LoginStatus.INDETERMINATE);
 
-        const authUrl = `https://auth.awsxdr.com/authorize?client_id=${CLIENT_ID}&response_type=code&scope=email+openid&redirect_uri=${encodeURIComponent(getRedirectUri())}&code_challenge=${challenge}&code_challenge_method=S256`
+        const authUrl = `https://auth.awsxdr.com/authorize?client_id=${CLIENT_ID}&response_type=code&scope=email+openid&redirect_uri=${encodeURIComponent(getRedirectUri())}&code_challenge=${challenge}&code_challenge_method=S256`;
 
         window.location.href = authUrl;
     }, []);
@@ -149,49 +152,57 @@ export const UserLoginContextProvider = ({ children }: PropsWithChildren) => {
     }, []);
 
     const logout = useCallback(() => {
-        if(state.currentToken && state.refreshToken) {
-            revokeTokens(state.refreshToken);
+        if(refreshToken) {
+            revokeTokens(refreshToken);
         }
-        setAndStoreState(() => DefaultLoginState());
+        setToken(undefined);
+        setRefreshToken(undefined);
+        setExpiryDate(0);
         setLoginStatus(LoginStatus.LOGGED_OUT);
 
         const logoutUrl = `https://auth.awsxdr.com/logout?client_id=${CLIENT_ID}&response_type=code&logout_uri=${encodeURIComponent(getRedirectUri())}`;
 
         window.location.href = logoutUrl;
-    }, [state, setAndStoreState]);
+    }, [refreshToken, setToken, setRefreshToken, setExpiryDate, setLoginStatus]);
 
-    const getToken = useCallback(async () => {
-        const search = new URLSearchParams(window.location.search);
-        if(search.has("code")) {
-            // We're in the middle of login, don't try to return a token
-            return "";
-        }
+    useEffect(() => {
+        const getToken = async () => {
+            const search = new URLSearchParams(window.location.search);
+            if(search.has("code")) {
+                // We're in the middle of login, don't try to return a token
+                return;
+            }
 
-        if(state.currentToken) {
-            if(Date.now() > state.expiryDate - 60000) {
-                if (state.refreshToken) {
-                    const { access_token, refresh_token, expires_in } = await refreshToken(state.refreshToken);
-                    const expiryDate = Date.now() + expires_in * 1000;
-                    setAndStoreState(current => ({ ...current, currentToken: access_token, refreshToken: refresh_token, expiryDate }));
-                    return access_token;
+            if(token) {
+                if(Date.now() > expiryDate - 60000) {
+                    if (refreshToken) {
+                        const { access_token, refresh_token, expires_in } = await requestTokenRefresh(refreshToken);
+                        setExpiryDate(Date.now() + expires_in * 1000);
+                        setToken(access_token);
+                        setRefreshToken(refresh_token)
+                    } else {
+                        setExpiryDate(0);
+                        setToken(undefined);
+                        setRefreshToken(undefined);
+                    }
                 } else {
-                    setAndStoreState(() => DefaultLoginState());
-                    return "";
+                    setLoginStatus(LoginStatus.LOGGED_IN);
                 }
             } else {
-                return state.currentToken;
+                if(refreshToken) {
+                    const { access_token, refresh_token, expires_in } = await requestTokenRefresh(refreshToken);
+                    setExpiryDate(Date.now() + expires_in * 1000);
+                    setToken(access_token);
+                    setRefreshToken(refresh_token)
+                } else if(!isLoading) {
+                    setLoginStatus(LoginStatus.LOGGED_OUT);
+                }
+
             }
-        } else {
-            if(state.refreshToken) {
-                const { access_token, refresh_token, expires_in } = await refreshToken(state.refreshToken);
-                const expiryDate = Date.now() + expires_in * 1000;
-                setAndStoreState(current => ({ ...current, currentToken: access_token, refreshToken: refresh_token, expiryDate }));
-                return access_token;
-            } else {
-                return "";
-            }
-        }
-    }, [state, setAndStoreState])
+        };
+
+        getToken();
+    }, [isLoading, expiryDate, refreshToken, token]);
 
     useEffect(() => {
         const search = new URLSearchParams(location.search);
@@ -200,39 +211,32 @@ export const UserLoginContextProvider = ({ children }: PropsWithChildren) => {
             const code = search.get("code");
             if(code) {
                 getTokenFromCode(code).then(({ access_token, refresh_token, expires_in }) => {
-                    const expiryDate = Date.now() + expires_in * 1000;
+                    setExpiryDate(Date.now() + expires_in * 1000);
+                    setToken(access_token);
+                    setRefreshToken(refresh_token)
                     setLoginStatus(LoginStatus.LOGGED_IN);
-                    setAndStoreState(current => ({ ...current, currentToken: access_token, refreshToken: refresh_token, expiryDate }));
+                    setCookie("refresh_token", refresh_token);
                 });
             }
         }
-    }, [setAndStoreState]);
+    }, []);
 
     useEffect(() => {
-        const storedLoginCookieValue = getCookie("user");
+        const storedRefreshToken = getCookie("refresh_token");
 
-        if(storedLoginCookieValue) {
-            const storedLogin: LoginState = JSON.parse(storedLoginCookieValue);
-
-            if(storedLogin.currentToken) {
-                setLoginStatus(LoginStatus.LOGGED_IN);
-            } else {
-                setLoginStatus(LoginStatus.LOGGED_OUT);
-            }
-
-            setState(storedLogin);
-        } else {
-            setLoginStatus(LoginStatus.LOGGED_OUT);
+        if(storedRefreshToken) {
+            setRefreshToken(storedRefreshToken);
         }
-
-    }, [setState]);
+        setIsLoading(false);
+    }, []);
 
     return (
         <UserLoginContext.Provider value={{ 
-            getLoginStatus: useCallback(() => loginStatus, [loginStatus]),
+            loginStatus,
             startLogin,
+            startRegister,
             logout,
-            getToken,
+            token,
         }}>
             {loginStatus !== LoginStatus.INDETERMINATE && children}
         </UserLoginContext.Provider>

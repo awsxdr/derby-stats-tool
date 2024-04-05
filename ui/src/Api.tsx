@@ -15,11 +15,11 @@ interface IApi {
     setDocument: (game: GameState) => Promise<void>,
 }
 
-const Api = (getToken: () => Promise<string>): IApi => ({
+const Api = (token: string): IApi => ({
     uploadBlankStatsBook: async (fileName: string, fileContents: string) => {
         const response = await fetch('https://stats.awsxdr.com/api/stats/blank', {
             method: 'POST',
-            headers: [["Authorization", `Bearer ${await getToken()}`]],
+            headers: [["Authorization", `Bearer ${token}`]],
             body: JSON.stringify({
                 filename: fileName,
                 data: fileContents
@@ -34,7 +34,7 @@ const Api = (getToken: () => Promise<string>): IApi => ({
     getBlankStatsBooks: async () => {
         const response = await fetch('https://stats.awsxdr.com/api/stats/blank', {
             method: 'GET',
-            headers: [["Authorization", `Bearer ${await getToken()}`]],
+            headers: [["Authorization", `Bearer ${token}`]],
         });
 
         const blankStatsBooks: string[] = await response.json();
@@ -46,10 +46,12 @@ const Api = (getToken: () => Promise<string>): IApi => ({
         const response = await fetch('https://stats.awsxdr.com/api/export', { 
             method: 'POST',
             body: JSON.stringify(game),
-            headers: [["Authorization", `Bearer ${await getToken()}`]],
+            headers: [["Authorization", `Bearer ${token}`]],
         });
 
-        if (!response.ok) return;
+        if (!response.ok) {
+            throw new Error("Failed to export stats book");
+        }
 
         const blob = await response.blob();
         const link = document.createElement('a');
@@ -71,7 +73,7 @@ const Api = (getToken: () => Promise<string>): IApi => ({
         try {
             const response = await fetch('https://stats.awsxdr.com/api/stats', {
                 method: 'GET',
-                headers: [["Authorization", `Bearer ${await getToken()}`]],
+                headers: [["Authorization", `Bearer ${token}`]],
             });
 
             if(response.ok) {
@@ -92,7 +94,7 @@ const Api = (getToken: () => Promise<string>): IApi => ({
         const response = await fetch('https://stats.awsxdr.com/api/stats', {
             method: 'POST',
             body: JSON.stringify(game),
-            headers: [["Authorization", `Bearer ${await getToken()}`]],
+            headers: [["Authorization", `Bearer ${token}`]],
         });
 
         if (!response.ok) {
@@ -111,9 +113,9 @@ export const useApiContext = () => useContext(ApiContext);
 
 export const ApiProvider = ({ children }: PropsWithChildren) => {
 
-    const { getToken } = useUserLoginContext();
+    const { token } = useUserLoginContext();
 
-    const api = useMemo(() => Api(getToken), [getToken]);
+    const api = useMemo(() => token ? Api(token) : undefined, [token]);
 
     return (
         <ApiContext.Provider value={{ api }}>

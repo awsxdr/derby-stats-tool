@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { Alert, Button, CardList, Intent } from "@blueprintjs/core";
+import { Alert, Button, CardList, HotkeyConfig, HotkeysTarget2, Intent } from "@blueprintjs/core";
 
 import { Official, useGameContext } from "@contexts";
 import { Role } from "./Role";
@@ -82,26 +82,64 @@ export const OfficialsRosterSheet = () => {
         setIsDeleteOfficialWarningOpen(false);
     }, [gameState, setGameState, selectedOfficialIndex]);
 
+    const valueOrBlank = (array: string[], index: number) => array.length > index ? array[index] : '';
+
+    const handlePaste = useCallback(async () => {
+        const pastedOfficials: Official[] = 
+            (await navigator.clipboard.readText())
+            .split(/\r?\n/)
+            .filter(l => l.trim().length > 0)
+            .map(l => l.split(/\t+/))
+            .map(o => ({
+                role: valueOrBlank(o, 0),
+                name: valueOrBlank(o, 1),
+                league: valueOrBlank(o, 2),
+                certificationLevel: valueOrBlank(o, 3),
+            }));
+
+        setGameState({
+            ...gameState,
+            officials: [
+                ...gameState.officials,
+                ...pastedOfficials
+            ]
+        });
+    }, [gameState, setGameState]);
+
+    const hotkeys: HotkeyConfig[] = [
+        {
+            combo: 'mod+v',
+            label: 'Paste',
+            onKeyDown: handlePaste,
+            global: true,
+        },
+    ];
+
     return (
         <>
-            <div className={styles.officialsContainer}>
-                <CardList bordered>
-                    { gameState.officials.map((o, i) => (
-                        <OfficialItem 
-                            official={o} 
-                            roles={roles} 
-                            index={i}
-                            onDelete={handleDeleteOfficial} 
-                            onRoleChange={handleRoleSet}
-                            onNameChange={handleNameSet}
-                            onLeagueChange={handleLeagueSet}
-                            onCertificationLevelChange={handleCertificationLevelSet}
-                            onRoleAdded={handleRoleAdded}
-                        />
-                    )) }
-                </CardList>
-            </div>
-            <Button icon='plus' outlined onClick={addOfficial} />
+            <HotkeysTarget2 hotkeys={hotkeys} options={{ showDialogKeyCombo: 'invalid' }}>
+                <div className={styles.officialsRoster}>
+                    <div className={styles.officialsContainer}>
+                        <CardList bordered>
+                            { gameState.officials.map((o, i) => (
+                                <OfficialItem 
+                                    official={o} 
+                                    roles={roles} 
+                                    index={i}
+                                    onDelete={handleDeleteOfficial} 
+                                    onRoleChange={handleRoleSet}
+                                    onNameChange={handleNameSet}
+                                    onLeagueChange={handleLeagueSet}
+                                    onCertificationLevelChange={handleCertificationLevelSet}
+                                    onRoleAdded={handleRoleAdded}
+                                    onAddNewItem={addOfficial}
+                                />
+                            )) }
+                        </CardList>
+                    </div>
+                    <Button icon='plus' outlined onClick={addOfficial} />
+                </div>
+            </HotkeysTarget2>
             <Alert
                 cancelButtonText='No'
                 confirmButtonText='Yes'

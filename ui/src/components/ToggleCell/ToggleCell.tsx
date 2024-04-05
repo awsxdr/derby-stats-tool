@@ -49,7 +49,7 @@ export class ToggleCell extends React.Component<ToggleCellProps, ToggleCellState
     }
 
     public render() {
-        return <HotkeysTarget2 hotkeys={this.hotkeys}>{this.renderCell}</HotkeysTarget2>;
+        return <HotkeysTarget2 hotkeys={this.hotkeys} options={{ showDialogKeyCombo: 'invalid' }}>{this.renderCell}</HotkeysTarget2>;
     }
 
     private renderCell = ({ handleKeyDown, handleKeyUp }: UseHotkeysReturnValue) => {

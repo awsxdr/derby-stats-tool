@@ -105,9 +105,9 @@ export const StatsTable = ({ children, rowCount, columnWidths, deleteCellData, c
             onKeyDown: handleCut,
         },
     ];
-
+    
     return (
-        <HotkeysTarget2 hotkeys={hotkeys}>
+        <HotkeysTarget2 hotkeys={hotkeys} options={{ showDialogKeyCombo: 'invalid' }}>
             <Table2 
                 numRows={rowCount} 
                 enableRowResizing={false} 

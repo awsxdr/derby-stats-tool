@@ -1,25 +1,37 @@
-import CookieConsent from 'react-cookie-consent';
-import { OverlaysProvider } from '@blueprintjs/core'
+import { BlueprintProvider } from '@blueprintjs/core'
 
 import { GameStateContextProvider, UserLoginContextProvider, UserInfoContextProvider } from '@contexts';
 import { HomePage } from '@pages';
 import { ApiProvider } from '@/Api';
 
 import './App.css'
+import { HotkeysProviderWithoutDialog, useCustomHotkeysContext } from './contexts/CustomHotkeysContext';
+
+const InnerApp = () => {
+    const hotkeys = useCustomHotkeysContext();
+
+    return (
+        <BlueprintProvider hotkeysProviderValue={hotkeys}>
+            <HomePage />
+            {/* <CookieConsent onAccept={() => window.location.reload()}>
+                This website uses cookies to provide functionality
+            </CookieConsent> */}
+        </BlueprintProvider>
+    );
+}
+
+// Blueprint moans about there being no hotkeys provider. Just disable them to stop the noise.
+console.warn = () => {};
 
 function App() {
-
-  return (
+    return (
         <UserLoginContextProvider>
             <ApiProvider>
                 <UserInfoContextProvider>
                     <GameStateContextProvider>
-                        <OverlaysProvider>
-                            <HomePage />
-                            <CookieConsent onAccept={() => window.location.reload()}>
-                                This website uses cookies to provide functionality
-                            </CookieConsent>
-                        </OverlaysProvider>
+                        <HotkeysProviderWithoutDialog>
+                            <InnerApp />
+                        </HotkeysProviderWithoutDialog>
                     </GameStateContextProvider>
                 </UserInfoContextProvider>
             </ApiProvider>

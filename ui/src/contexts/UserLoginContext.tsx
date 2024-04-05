@@ -138,6 +138,16 @@ export const UserLoginContextProvider = ({ children }: PropsWithChildren) => {
         window.location.href = authUrl;
     }, []);
 
+    const startRegister = useCallback(() => {
+        const [verifier, challenge] = generateChallenge();
+        setCookie("verifier", verifier);
+        setLoginStatus(LoginStatus.INDETERMINATE);
+
+        const registerUrl = `https://auth.awsxdr.com/signup?client_id=${CLIENT_ID}&response_type=code&scope=email+openid&redirect_uri=${encodeURIComponent(getRedirectUri())}&code_challenge=${challenge}&code_challenge_method=S256`;
+
+        window.location.href = registerUrl;
+    }, []);
+
     const logout = useCallback(() => {
         if(state.currentToken && state.refreshToken) {
             revokeTokens(state.refreshToken);

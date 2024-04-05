@@ -180,6 +180,8 @@ public static class StatsBookModifier
 
         void WriteLineupLine(LineupLine line, int column, int row)
         {
+			if (line == null) return;
+			
 			if(line.NoPivot) SetCell(document, column, row, "X");
 			WriteSkaterLineup(line.Skaters.Jammer, column + 1, row, false);
 			WriteSkaterLineup(line.Skaters.Pivot, column + 5, row);
@@ -202,16 +204,10 @@ public static class StatsBookModifier
         WriteLineup(stats.Lineups.Period2.HomeLineups.Lines, 1, 46);
         WriteLineup(stats.Lineups.Period2.AwayLineups.Lines, 27, 46);
 
-		var period1Tracker = 
-			!string.IsNullOrWhiteSpace(stats.Lineups.Period1.AwayLineups.LineupTracker) && stats.Lineups.Period1.HomeLineups.LineupTracker != stats.Lineups.Period1.AwayLineups.LineupTracker
-			? $"{stats.Lineups.Period1.HomeLineups.LineupTracker} / {stats.Lineups.Period1.AwayLineups.LineupTracker}"
-			: stats.Lineups.Period1.HomeLineups.LineupTracker;
-		SetCell(document, 15, 1, period1Tracker);
-		var period2Tracker = 
-			!string.IsNullOrWhiteSpace(stats.Lineups.Period2.AwayLineups.LineupTracker) && stats.Lineups.Period2.HomeLineups.LineupTracker != stats.Lineups.Period2.AwayLineups.LineupTracker
-			? $"{stats.Lineups.Period2.HomeLineups.LineupTracker} / {stats.Lineups.Period2.AwayLineups.LineupTracker}"
-			: stats.Lineups.Period2.HomeLineups.LineupTracker;
-		SetCell(document, 41, 1, period2Tracker);
+		SetCell(document, 15, 1, stats.Lineups.Period1.HomeLineups.LineupTracker);
+		SetCell(document, 41, 1, stats.Lineups.Period1.AwayLineups.LineupTracker);
+		SetCell(document, 15, 43, stats.Lineups.Period2.HomeLineups.LineupTracker);
+		SetCell(document, 41, 43, stats.Lineups.Period2.AwayLineups.LineupTracker);
 
 		using (var stream = lineup.Open())
 		{

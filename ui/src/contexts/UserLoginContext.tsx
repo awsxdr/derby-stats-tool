@@ -215,7 +215,7 @@ export const UserLoginContextProvider = ({ children }: PropsWithChildren) => {
                     setToken(access_token);
                     setRefreshToken(refresh_token)
                     setLoginStatus(LoginStatus.LOGGED_IN);
-                    setCookie("refresh_token", refresh_token);
+                    setCookie("refresh_token", refresh_token, { expires: 30 });
                 });
             }
         }

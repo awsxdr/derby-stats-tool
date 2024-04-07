@@ -3,6 +3,7 @@ import moment from 'moment';
 import { useApiContext } from "@/Api";
 import { AppToaster } from "@components";
 import { Intent } from "@blueprintjs/core";
+import { range } from "@/rangeMethods";
 
 export enum TeamType {
     HOME = 'home',
@@ -47,10 +48,21 @@ export type ScoreLines = {
     lines: ScoreLine[],
 }
 
+const DEFAULT_SCORE_LINE = (): ScoreLine => ({
+    jam: '',
+    jammer: '',
+    lost: false,
+    lead: false,
+    call: false,
+    injury: false,
+    noInitial: false,
+    trips: range(0, 8).map(() => ''),
+});
+
 const DEFAULT_SCORE_LINES = (): ScoreLines => ({
     scorekeeper: '',
     jammerRef: '',
-    lines: [],
+    lines: range(1, 38).map(DEFAULT_SCORE_LINE),
 });
 
 type PeriodScores = { [team in TeamType]: ScoreLines };
@@ -70,7 +82,7 @@ type PenaltyLines = {
 
 const DEFAULT_PENALTY_LINES = (): PenaltyLines => ({
     penaltyTracker: '',
-    lines: [],
+    lines: range(0, 18).map(() => range(1, 10).map(() => ({ code: '', jam: '' }))),
 });
 
 type PeriodPenalties = { [team in TeamType]: PenaltyLines };
@@ -102,9 +114,26 @@ type LineupLines = {
     lines: LineupLine[],
 };
 
+const DEFAULT_LINEUP_ITEM = (): LineupItem => ({
+    number: '',
+    events: range(1, 3).map(() => ''),
+});
+
+const DEFAULT_LINEUP_LINE = (): LineupLine => ({
+    jamNumber: '',
+    noPivot: false,
+    skaters: {
+        jammer: DEFAULT_LINEUP_ITEM(),
+        pivot: DEFAULT_LINEUP_ITEM(),
+        blocker1: DEFAULT_LINEUP_ITEM(),
+        blocker2: DEFAULT_LINEUP_ITEM(),
+        blocker3: DEFAULT_LINEUP_ITEM(),
+    }
+});
+
 const DEFAULT_LINEUP_LINES = (): LineupLines => ({
     lineupTracker: '',
-    lines: [],
+    lines: range(1, 38).map(DEFAULT_LINEUP_LINE),
 });
 
 type PeriodLineups = { [team in TeamType]: LineupLines };
@@ -135,6 +164,18 @@ export const DEFAULT_OFFICIAL = (): Official => ({
     certificationLevel: '',
 });
 
+export const DEFAULT_ROSTER = (): TeamRoster => ({
+    league: '',
+    team: '',
+    color: '',
+    captainSkateName: '',
+    captainLegalName: '',
+    skaters: range(1, 20).map(() => ({
+        number: '',
+        name: ''
+    })),
+});
+
 type Officials = Official[];
 
 export interface GameState {
@@ -159,8 +200,8 @@ export const DefaultGameState = (): GameState => ({
     },
     officials: [],
     rosters: {
-        home: { league: '', team: '', color: '', captainSkateName: '', captainLegalName: '', skaters: [] },
-        away: { league: '', team: '', color: '', captainSkateName: '', captainLegalName: '', skaters: [] },
+        home: DEFAULT_ROSTER(),
+        away: DEFAULT_ROSTER(),
     },
     scores: {
         1: { home: DEFAULT_SCORE_LINES(), away: DEFAULT_SCORE_LINES() },

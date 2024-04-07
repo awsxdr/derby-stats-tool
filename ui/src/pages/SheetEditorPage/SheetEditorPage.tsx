@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Alert, Alignment, Button, Card, Icon, Intent, Menu, MenuDivider, MenuItem, Navbar, Overlay2, Popover, Spinner, Tab, TabId, Tabs, Tooltip } from '@blueprintjs/core'
 
-import { AppToaster, Footer, LineupContainer, PenaltiesContainer, RostersContainer, ScoreSheetsContainer } from '@components';
+import { AppToaster, Footer, ImportDialog, LineupContainer, PenaltiesContainer, RostersContainer, ScoreSheetsContainer } from '@components';
 import { DefaultGameState, useGameContext, useUserInfoContext, useUserLoginContext } from '@contexts';
 import { useApiContext } from '@/Api';
 
@@ -12,6 +12,7 @@ import classNames from 'classnames';
 export const SheetEditorPage = () => {
     const [selectedTab, setSelectedTab] = useState<TabId>('igrf');
     const [isConfirmNewOpen, setIsConfirmNewOpen] = useState(false);
+    const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
     const [isWarnNoBlankStatsOpen, setIsWarnNoBlankStatsOpen] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
 
@@ -30,6 +31,10 @@ export const SheetEditorPage = () => {
     const confirmNew = useCallback(() => {
         setIsConfirmNewOpen(true);
     }, [setIsConfirmNewOpen]);
+
+    const importDocument = useCallback(() => {
+        setIsImportDialogOpen(true);
+    }, [setIsImportDialogOpen]);
   
     const handleConfirmNewCancel = useCallback(() => setIsConfirmNewOpen(false), [setIsConfirmNewOpen]);
     const handleConfirmNewConfirm = useCallback(() => {
@@ -50,6 +55,10 @@ export const SheetEditorPage = () => {
             setIsWarnNoBlankStatsOpen(true);
         }
     }, [gameState, api, user, setIsWarnNoBlankStatsOpen, setIsExporting]);
+
+    const handleImportFinish = useCallback(() => {
+        setIsImportDialogOpen(false);
+    }, [setIsImportDialogOpen])
 
     const UserMenu = () => (
         <Menu>
@@ -72,8 +81,8 @@ export const SheetEditorPage = () => {
                     <Tooltip content="Clear data" placement='bottom'>
                         <Button intent='none' minimal icon='document' onClick={confirmNew} />
                     </Tooltip>
-                    <Tooltip content="Import stats book or JSON" placement='bottom'>
-                        <Button intent='none' minimal icon='folder-open' disabled />
+                    <Tooltip content="Import stats book" placement='bottom'>
+                        <Button intent='none' minimal icon='folder-open' onClick={importDocument} />
                     </Tooltip>
                     <Tooltip content="Download stats book" placement='bottom'>
                         <Button intent='none' minimal icon='download' onClick={downloadFile} disabled={!user} loading={isExporting} />
@@ -139,6 +148,7 @@ export const SheetEditorPage = () => {
                 <p>No blank stats book has been configured. Please go to the settings screen to upload one.</p>
                 <p>Blank stats books can be <a href='https://community.wftda.org/resources/document-libraries/competition-documents#statsbook' target='_blank'>downloaded from WFTDA</a></p>
             </Alert>
+            <ImportDialog isOpen={isImportDialogOpen} onFinished={handleImportFinish} />
         </>
     );
 }

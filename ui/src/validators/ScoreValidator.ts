@@ -78,7 +78,7 @@ export const useScoreValidator = (period: Period, team: TeamType) => {
             const roster = game.rosters[team];
             const normalizedJammerNumber = jammerNumber.trim().toLowerCase();
 
-            if (!roster.skaters.find(s => s?.number.trim().toLowerCase() === normalizedJammerNumber)) {
+            if (normalizedJammerNumber !== '' && !roster.skaters.find(s => s?.number.trim().toLowerCase() === normalizedJammerNumber)) {
                 return error('Skater not found in roster');
             }
 

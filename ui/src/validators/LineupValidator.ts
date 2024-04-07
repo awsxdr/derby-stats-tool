@@ -36,7 +36,7 @@ export const useLineupValidator = (period: Period, team: TeamType) => {
 
         const normalizedNumber = skater?.number?.trim() ?? '';
 
-        if (roster.find(s => s.number === normalizedNumber) === undefined) {
+        if (normalizedNumber !== '' && roster.find(s => s.number === normalizedNumber) === undefined) {
             return error('Skater not found in roster');
         }
 

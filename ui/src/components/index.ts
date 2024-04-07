@@ -1,6 +1,7 @@
 export * from './AppToaster';
 export * from './Footer';
 export * from './GameDetailsSheet';
+export * from './ImportDialog';
 export * from './LineupContainer';
 export * from './LineupOfficialsSheet';
 export * from './LineupSheet';

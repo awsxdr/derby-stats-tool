@@ -55,13 +55,13 @@ export const ImportDialog = ({ isOpen, onClose }: ImportDialogProps) => {
         setSelectedFileName(undefined);
         setSelectedFile(undefined);
         setIsBackButtonEnabled(true);
-        setIsBackButtonEnabled(false);
+        setIsNextButtonEnabled(false);
         setFileInfo(undefined);
         setCurrentStepId('selectFile');
         setIsImporting(false);
 
         onClose && onClose();
-    }, [setSelectedFileName, setSelectedFile, setIsBackButtonEnabled, setIsBackButtonEnabled, setFileInfo, setCurrentStepId, setIsImporting, onClose]);
+    }, [setSelectedFileName, setSelectedFile, setIsBackButtonEnabled, setIsNextButtonEnabled, setFileInfo, setCurrentStepId, setIsImporting, onClose]);
 
     return (
         <>

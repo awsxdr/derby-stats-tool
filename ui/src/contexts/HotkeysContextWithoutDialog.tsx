@@ -2,14 +2,18 @@ import { HotkeyConfig, HotkeysContextInstance } from "@blueprintjs/core";
 import { shallowCompareKeys } from "@blueprintjs/core/lib/esm/common/utils/compareUtils";
 import { PropsWithChildren, createContext, useContext, useReducer } from "react";
 
+export interface OverridableHotkeyConfig extends HotkeyConfig {
+    overrideExisting?: boolean;
+}
+
 interface HotkeysContextState {
     hasProvider: boolean;
-    hotkeys: HotkeyConfig[];
+    hotkeys: OverridableHotkeyConfig[];
     isDialogOpen: boolean;
 }
 
 type HotkeysAction =
-    | { type: "ADD_HOTKEYS" | "REMOVE_HOTKEYS"; payload: HotkeyConfig[] }
+    | { type: "ADD_HOTKEYS" | "REMOVE_HOTKEYS"; payload: OverridableHotkeyConfig[] }
     | { type: "CLOSE_DIALOG" | "OPEN_DIALOG" };
 
 const DEFAULT_HOTKEYS_STATE = (): HotkeysContextState => ({ hasProvider: false, hotkeys: [], isDialogOpen: false });
@@ -19,18 +23,25 @@ const hotkeysReducer = (state: HotkeysContextState, action: HotkeysAction) => {
         case "ADD_HOTKEYS": {
             // only pick up unique hotkeys which haven't been registered already
             const newUniqueHotkeys = [];
+            const overrideHotkeys: OverridableHotkeyConfig[] = [];
             for (const a of action.payload) {
                 let isUnique = true;
                 for (const b of state.hotkeys) {
                     isUnique &&= !shallowCompareKeys(a, b, { exclude: ["onKeyDown", "onKeyUp"] });
                 }
-                if (isUnique) {
+                if (isUnique || a.overrideExisting) {
                     newUniqueHotkeys.push(a);
+                }
+                if (a.overrideExisting) {
+                    overrideHotkeys.push(a);
                 }
             }
             return {
                 ...state,
-                hotkeys: [...state.hotkeys, ...newUniqueHotkeys],
+                hotkeys: [
+                    ...state.hotkeys.filter(h => overrideHotkeys.every(o => h.combo !== o.combo)),
+                    ...newUniqueHotkeys
+                ],
             };
         }
         case "REMOVE_HOTKEYS": {

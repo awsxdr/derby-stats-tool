@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { ColumnProps, Region, RenderMode, Table2 } from "@blueprintjs/table";
+import { ColumnProps, FocusedCellCoordinates, Region, RenderMode, Table2 } from "@blueprintjs/table";
 import { range } from "@/rangeMethods";
 import { HotkeyConfig, HotkeysTarget2 } from "@blueprintjs/core";
 
@@ -16,6 +16,7 @@ interface StatsTableProps {
 
 export const StatsTable = ({ children, rowCount, columnWidths, deleteCellData, cellRendererDependencies, getCellData, setCellData, onBatchOperationCompleted }: StatsTableProps) => {
     const [ selectedRange, setSelectedRange ] = useState<Region[]>([]);
+    const [ focusedCell, setFocusedCell ] = useState<FocusedCellCoordinates>({ col: 1, row: 1, focusSelectionIndex: 0 });
     const [ cellRenderCount, setCellRenderCount ] = useState(0);
 
     const rerenderTable = useCallback(() => setCellRenderCount(c => c + 1), [setCellRenderCount]);
@@ -85,6 +86,45 @@ export const StatsTable = ({ children, rowCount, columnWidths, deleteCellData, c
 
     const handleSelect = useCallback((regions: Region[]) => setSelectedRange(regions), [setSelectedRange]);
 
+    const handleMove = useCallback((event: KeyboardEvent, direction: 'up' | 'down' | 'left' | 'right') => {
+        if (!focusedCell) {
+            return;
+        }
+
+        let { row, col } = focusedCell;
+
+        switch (direction) {
+            case 'up':
+                if (row > 0) {
+                    --row;
+                }
+                break;
+
+            case 'down':
+                if (row < rowCount - 1) {
+                    ++row;
+                }
+                break;
+
+            case 'left':
+                if (col > 0) {
+                    --col;
+                }
+                break;
+
+            case 'right':
+                if (col < columnWidths.length - 1) {
+                    ++col;
+                }
+                break;
+        }
+
+        setSelectedRange([ { cols: [col, col], rows: [row, row]}]);
+        setFocusedCell({ ...focusedCell, col, row });
+        event.preventDefault();
+
+    }, [selectedRange, setSelectedRange]);
+
     const hotkeys: HotkeyConfig[] = [
         {
             combo: 'mod+v',
@@ -104,8 +144,40 @@ export const StatsTable = ({ children, rowCount, columnWidths, deleteCellData, c
             global: true,
             onKeyDown: handleCut,
         },
+        {
+            combo: 'up',
+            label: 'up',
+            global: true,
+            onKeyDown: (e) => handleMove(e, 'up'),
+            allowInInput: true,
+        },
+        {
+            combo: 'down',
+            label: 'down',
+            global: true,
+            onKeyDown: (e) => handleMove(e, 'down'),
+            allowInInput: true,
+        },
+        {
+            combo: 'left',
+            label: 'left',
+            global: true,
+            onKeyDown: (e) => handleMove(e, 'left'),
+            allowInInput: true,
+        },
+        {
+            combo: 'right',
+            label: 'right',
+            global: true,
+            onKeyDown: (e) => handleMove(e, 'right'),
+            allowInInput: true,
+        },
     ];
     
+    const handleFocusedCell = (focusedCell: FocusedCellCoordinates) => {
+        setFocusedCell(focusedCell);
+    }
+
     return (
         <HotkeysTarget2 hotkeys={hotkeys} options={{ showDialogKeyCombo: 'invalid' }}>
             <Table2 
@@ -122,6 +194,8 @@ export const StatsTable = ({ children, rowCount, columnWidths, deleteCellData, c
                 selectedRegions={selectedRange}
                 onSelection={handleSelect}
                 cellRendererDependencies={(cellRendererDependencies ?? []).concat([cellRenderCount])}
+                focusedCell={focusedCell}
+                onFocusedCell={handleFocusedCell}
             >
                 { children }
             </Table2>

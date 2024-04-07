@@ -355,8 +355,6 @@ export const useImporter = (file?: File) => {
             },
         };
 
-        console.log(game);
-
         setGameState(game);
 
     }, [workbook, setGameState]);

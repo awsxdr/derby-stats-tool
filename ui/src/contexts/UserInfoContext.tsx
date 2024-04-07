@@ -70,8 +70,6 @@ export const UserInfoContextProvider = ({ children }: PropsWithChildren) => {
         }
     }, [token, loginStatus, setUser, getUserData]);
 
-    console.log("Setting user value");
-
     return (
         <UserInfoContext.Provider value={{ user }}>
             {children}

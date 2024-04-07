@@ -136,6 +136,11 @@ export const useImporter = (file?: File) => {
             events: range(column + 1, column + 3).map(columnFromNumber).map(column => lineups.getCell(`${column}${row}`).text),
         });
 
+        const copyNumberFromScoreIfRequired = (column: number, row: number, skater: LineupItem): LineupItem => ({
+            ...skater,
+            number: skater.number.trim() === '' ? scores.getCell(`${column === numberFromColumn('C') ? 'B' : 'U'}${row}`).text : skater.number,
+        });
+
         const game: GameState = {
             game: { 
                 venue: igrf.getCell('B3').text, 
@@ -290,7 +295,8 @@ export const useImporter = (file?: File) => {
                             jamNumber: lineups.getCell(`A${row}`).text,
                             noPivot: lineups.getCell(`B${row}`).text.trim() !== '',
                             skaters: {
-                                jammer: getLineupSkater(numberFromColumn('C'), row),
+                                jammer: copyNumberFromScoreIfRequired(numberFromColumn('C'), row, 
+                                    getLineupSkater(numberFromColumn('C'), row)),
                                 pivot: getLineupSkater(numberFromColumn('G'), row),
                                 blocker1: getLineupSkater(numberFromColumn('K'), row),
                                 blocker2: getLineupSkater(numberFromColumn('O'), row),
@@ -304,7 +310,8 @@ export const useImporter = (file?: File) => {
                             jamNumber: lineups.getCell(`AA${row}`).text,
                             noPivot: lineups.getCell(`AB${row}`).text.trim() !== '',
                             skaters: {
-                                jammer: getLineupSkater(numberFromColumn('AC'), row),
+                                jammer: copyNumberFromScoreIfRequired(numberFromColumn('AC'), row, 
+                                    getLineupSkater(numberFromColumn('AC'), row)),
                                 pivot: getLineupSkater(numberFromColumn('AG'), row),
                                 blocker1: getLineupSkater(numberFromColumn('AK'), row),
                                 blocker2: getLineupSkater(numberFromColumn('AO'), row),
@@ -320,7 +327,8 @@ export const useImporter = (file?: File) => {
                             jamNumber: lineups.getCell(`A${row}`).text,
                             noPivot: lineups.getCell(`B${row}`).text.trim() !== '',
                             skaters: {
-                                jammer: getLineupSkater(numberFromColumn('C'), row),
+                                jammer: copyNumberFromScoreIfRequired(numberFromColumn('C'), row, 
+                                    getLineupSkater(numberFromColumn('C'), row)),
                                 pivot: getLineupSkater(numberFromColumn('G'), row),
                                 blocker1: getLineupSkater(numberFromColumn('K'), row),
                                 blocker2: getLineupSkater(numberFromColumn('O'), row),
@@ -334,7 +342,8 @@ export const useImporter = (file?: File) => {
                             jamNumber: lineups.getCell(`AA${row}`).text,
                             noPivot: lineups.getCell(`AB${row}`).text.trim() !== '',
                             skaters: {
-                                jammer: getLineupSkater(numberFromColumn('AC'), row),
+                                jammer: copyNumberFromScoreIfRequired(numberFromColumn('AC'), row, 
+                                    getLineupSkater(numberFromColumn('AC'), row)),
                                 pivot: getLineupSkater(numberFromColumn('AG'), row),
                                 blocker1: getLineupSkater(numberFromColumn('AK'), row),
                                 blocker2: getLineupSkater(numberFromColumn('AO'), row),

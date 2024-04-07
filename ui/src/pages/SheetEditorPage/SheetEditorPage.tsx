@@ -56,9 +56,9 @@ export const SheetEditorPage = () => {
         }
     }, [gameState, api, user, setIsWarnNoBlankStatsOpen, setIsExporting]);
 
-    const handleImportFinish = useCallback(() => {
+    const handleImportClose = useCallback(() => {
         setIsImportDialogOpen(false);
-    }, [setIsImportDialogOpen])
+    }, [setIsImportDialogOpen]);
 
     const UserMenu = () => (
         <Menu>
@@ -148,7 +148,7 @@ export const SheetEditorPage = () => {
                 <p>No blank stats book has been configured. Please go to the settings screen to upload one.</p>
                 <p>Blank stats books can be <a href='https://community.wftda.org/resources/document-libraries/competition-documents#statsbook' target='_blank'>downloaded from WFTDA</a></p>
             </Alert>
-            <ImportDialog isOpen={isImportDialogOpen} onFinished={handleImportFinish} />
+            <ImportDialog isOpen={isImportDialogOpen} onClose={handleImportClose} />
         </>
     );
 }

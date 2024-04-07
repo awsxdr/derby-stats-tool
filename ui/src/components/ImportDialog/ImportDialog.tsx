@@ -7,10 +7,10 @@ import { ConfirmPanel } from "./ConfirmPanel";
 
 interface ImportDialogProps {
     isOpen: boolean;
-    onFinished?: () => void;
+    onClose?: () => void;
 }
 
-export const ImportDialog = ({ isOpen, onFinished }: ImportDialogProps) => {
+export const ImportDialog = ({ isOpen, onClose }: ImportDialogProps) => {
 
     const [selectedFileName, setSelectedFileName] = useState<string>();
     const [selectedFile, setSelectedFile] = useState<File>();
@@ -47,8 +47,21 @@ export const ImportDialog = ({ isOpen, onFinished }: ImportDialogProps) => {
     const handleImport = useCallback(async () => {
         setIsImporting(true);
         await importData();
-        onFinished && onFinished();
+
+        handleClose();
     }, [importData]);
+
+    const handleClose = useCallback(() => {
+        setSelectedFileName(undefined);
+        setSelectedFile(undefined);
+        setIsBackButtonEnabled(true);
+        setIsBackButtonEnabled(false);
+        setFileInfo(undefined);
+        setCurrentStepId('selectFile');
+        setIsImporting(false);
+
+        onClose && onClose();
+    }, [setSelectedFileName, setSelectedFile, setIsBackButtonEnabled, setIsBackButtonEnabled, setFileInfo, setCurrentStepId, setIsImporting, onClose]);
 
     return (
         <>
@@ -63,7 +76,7 @@ export const ImportDialog = ({ isOpen, onFinished }: ImportDialogProps) => {
                 backButtonProps={{ disabled: !isBackButtonEnabled || isImporting }}
                 nextButtonProps={{ loading: isLoading, disabled: !isNextButtonEnabled }}
                 finalButtonProps={{ intent: Intent.DANGER, text: 'Erase & import', onClick: handleImport, loading: isImporting }}
-                resetOnClose={true}
+                onClose={handleClose}
             >
                 <DialogStep
                     id='selectFile'

@@ -1,22 +1,44 @@
-import { Period, TeamType, useGameContext } from "@contexts";
-import { useCallback, useMemo } from "react";
-import { OK, Validity, error, warning } from ".";
+import { Period, SkaterLineups, TeamType, useGameContext } from "@contexts";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { OK, Validity, error, getLowestValidityLevel, warning } from ".";
+import { range } from "@/rangeMethods";
 
-type PenaltyLineValidities = {
+export type PenaltyLineValidities = {
     penaltyTracker: Validity,
     lines: PenaltyLineValidity[],
 }
 
-type PenaltyLineValidity = PenaltyValidity[];
+export type PenaltyLineValidity = PenaltyValidity[];
 
-type PenaltyValidity = {
+export type PenaltyValidity = {
     jam: Validity,
     code: Validity,
 }
 
 const VALID_CODES: readonly string[] = [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'L', 'M', 'N', 'P', 'X' ];
 
+export const DEFAULT_PENALTY_VALIDITY = (): PenaltyValidity => ({
+    code: OK,
+    jam: OK,
+});
+
+export const DEFAULT_PENALTY_LINE_VALIDITY = (): PenaltyLineValidity =>
+    range(1, 10).map(DEFAULT_PENALTY_VALIDITY);
+
+export const DEFAULT_PENALTY_LINES_VALIDITY = (): PenaltyLineValidities => ({
+    penaltyTracker: OK,
+    lines: range(0, 18).map(DEFAULT_PENALTY_LINE_VALIDITY),
+});
+
 const isNumeric = (value: string) => !isNaN(parseInt(value));
+
+const getSkaters = (line: SkaterLineups) => [
+    line.jammer,
+    line.pivot,
+    line.blocker1,
+    line.blocker2,
+    line.blocker3,
+];
 
 export const usePenaltyValidator = (period: Period, team: TeamType) => {
     const { gameState: game } = useGameContext();
@@ -41,22 +63,29 @@ export const usePenaltyValidator = (period: Period, team: TeamType) => {
             return error('Jam number missing for penalty');
         }
 
-        if (jam.trim() === '') {
-            return OK;
-        }
+        if (jam.trim() !== '') {
+            if (jam.trim() === '?') {
+                return warning('Jam number missing');
+            }
 
-        if (jam.trim() === '?') {
-            return warning('Jam number missing');
-        }
+            if (!isNumeric(jam)) {
+                return error('Unexpected character in jam number box');
+            }
 
-        if (!isNumeric(jam)) {
-            return error('Unexpected character in jam number box');
-        }
+            const jamNumber = parseInt(jam);
 
-        const jamNumber = parseInt(jam);
+            if (jams.find(v => v === jamNumber) === undefined) {
+                return error('Jam number not found in game');
+            }
 
-        if (jams.find(v => v === jamNumber) === undefined) {
-            return error('Jam number not found in game');
+            const jamLineup = getSkaters(game.lineups[period][team].lines[jamNumber - 1].skaters).map(s => s.number);
+            const skaterNumber = game.rosters[team].skaters[lineIndex]?.number.toLowerCase().trim() ?? '';
+
+            const skaterIsInLineup = skaterNumber != '' && jamLineup.filter(n => n.toLowerCase().trim() === skaterNumber).length > 0;
+
+            if (!skaterIsInLineup) {
+                return error('Penalty for skater not in jam lineup');
+            }
         }
 
         return OK;
@@ -97,14 +126,29 @@ export const usePenaltyValidator = (period: Period, team: TeamType) => {
 
     }, [penalties]);
 
-    const validity = useMemo<PenaltyLineValidities>(() => ({
-        penaltyTracker: OK,
-        lines: penalties.lines?.map((line, lineIndex) =>
-            line?.map((_, penaltyIndex) => ({
-                jam: validateJamNumber(lineIndex, penaltyIndex),
-                code: validatePenaltyCode(lineIndex, penaltyIndex),
-            }))),
-    }), [penalties, validateJamNumber, validatePenaltyCode]);
+    const [validity, setValidity] = useState<PenaltyLineValidities>(DEFAULT_PENALTY_LINES_VALIDITY());
+    
+    useEffect(() => {
+        new Promise(resolve => {
+            setValidity({
+                penaltyTracker: OK,
+                lines: penalties.lines?.map((line, lineIndex) =>
+                    line?.map((_, penaltyIndex) => ({
+                        jam: validateJamNumber(lineIndex, penaltyIndex),
+                        code: validatePenaltyCode(lineIndex, penaltyIndex),
+                    }))),
+            });
 
-    return validity;
+            resolve(0);
+        });
+    }, [penalties, validateJamNumber, validatePenaltyCode]);
+
+    const validityLevel = useMemo(() => getLowestValidityLevel([
+        validity.penaltyTracker.validity,
+        ...validity.lines.map(l => getLowestValidityLevel([
+            ...l.map(p => getLowestValidityLevel([p.code.validity, p.jam.validity]))
+        ])),
+    ]), [validity]);
+
+    return { validity, validityLevel };
 };

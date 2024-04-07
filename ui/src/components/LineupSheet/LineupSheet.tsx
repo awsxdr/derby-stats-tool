@@ -2,8 +2,8 @@ import { ReactElement, useCallback, useMemo } from 'react';
 import { Cell, Column, ColumnHeaderCell, EditableCell2 } from '@blueprintjs/table'
 
 import { StatsTable, ToggleCell } from '@components'
-import { LineupLine, Period, SkaterType, TeamType, useGameContext } from '@contexts';
-import { OK, Validity, useLineupValidator } from '@validators';
+import { LineupLine, Period, SkaterType, TeamType, useGameContext, useValidation } from '@contexts';
+import { OK, Validity } from '@validators';
 
 import styles from './LineupSheet.module.css';
 import classNames from 'classnames';
@@ -28,7 +28,8 @@ export const LineupSheet = ({ teamType, period }: LineupSheetProps) => {
     const lineups = useMemo(() => gameState.lineups[period][teamType].lines, [gameState, period, teamType]);
     const scores = useMemo(() => gameState.scores[period][teamType].lines, [gameState, period, teamType]);
 
-    const validity = useLineupValidator(period, teamType);
+    const { validators } = useValidation();
+    const { validity } = useMemo(() => validators[teamType][period].lineupValidity, [validators[teamType][period].lineupValidity]);
 
     const renderAlternatingColorCell = (cellRenderer: CellRendererFn, lightColor: string, darkColor: string) =>
         (rowIndex: number) => cellRenderer(rowIndex % 2 == 0 ? lightColor : darkColor)(rowIndex);

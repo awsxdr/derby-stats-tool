@@ -1,13 +1,13 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Alert, Alignment, Button, Card, Icon, Intent, Menu, MenuDivider, MenuItem, Navbar, Overlay2, Popover, Spinner, Tab, TabId, Tabs, Tooltip } from '@blueprintjs/core'
+import classNames from 'classnames';
 
-import { AppToaster, Footer, ImportDialog, LineupContainer, PenaltiesContainer, RostersContainer, ScoreSheetsContainer } from '@components';
-import { DefaultGameState, useGameContext, useUserInfoContext, useUserLoginContext } from '@contexts';
+import { AppToaster, Footer, ImportDialog, LineupContainer, PenaltiesContainer, RostersContainer, ScoreSheetsContainer, ValidityIcon } from '@components';
+import { DefaultGameState, useGameContext, useUserInfoContext, useUserLoginContext, useValidation } from '@contexts';
 import { useApiContext } from '@/Api';
 
 import styles from './SheetEditorPage.module.scss';
-import classNames from 'classnames';
 
 export const SheetEditorPage = () => {
     const [selectedTab, setSelectedTab] = useState<TabId>('igrf');
@@ -21,6 +21,8 @@ export const SheetEditorPage = () => {
     const { user } = useUserInfoContext();
     const { api } = useApiContext();
     const navigate = useNavigate();
+
+    const { igrfValidity, scoreValidity, penaltyValidity, lineupValidity } = useValidation();
 
     const showSpinner = useMemo(() => !user || isLoading, [user, isLoading]);
   
@@ -110,10 +112,10 @@ export const SheetEditorPage = () => {
                         large 
                         fill
                     >
-                        <Tab id='igrf' title='IGRF' panel={<RostersContainer />} />
-                        <Tab id='score' title='Score' panel={<ScoreSheetsContainer />} />
-                        <Tab id='penalties' title='Penalties' panel={<PenaltiesContainer />} />
-                        <Tab id='lineup' title='Lineups' panel={<LineupContainer />} />
+                        <Tab id='igrf' panel={<RostersContainer />}>IGRF <ValidityIcon validity={igrfValidity} /></Tab>
+                        <Tab id='score' panel={<ScoreSheetsContainer />}>Score <ValidityIcon validity={scoreValidity.validityLevel} /></Tab>
+                        <Tab id='penalties' panel={<PenaltiesContainer />}>Penalties <ValidityIcon validity={penaltyValidity.validityLevel} /></Tab>
+                        <Tab id='lineup' panel={<LineupContainer />}>Lineups <ValidityIcon validity={lineupValidity.validityLevel} /></Tab>
                     </Tabs>
                 }
             </Navbar>

@@ -19,3 +19,4 @@ export * from './ScoreSheetsContainer';
 export * from './StatsTable';
 export * from './SuggestOfficial';
 export * from './ToggleCell';
+export * from './ValidityIcon';

@@ -1,11 +1,11 @@
 import { BlueprintProvider } from '@blueprintjs/core'
 
-import { GameStateContextProvider, UserLoginContextProvider, UserInfoContextProvider } from '@contexts';
+import { GameStateContextProvider, UserLoginContextProvider, UserInfoContextProvider, HotkeysProviderWithoutDialog, useCustomHotkeysContext } from '@contexts';
 import { HomePage } from '@pages';
 import { ApiProvider } from '@/Api';
 
 import './App.css'
-import { HotkeysProviderWithoutDialog, useCustomHotkeysContext } from './contexts/CustomHotkeysContext';
+import { ValidationContextProvider } from './contexts/ValidationContext';
 
 const InnerApp = () => {
     const hotkeys = useCustomHotkeysContext();
@@ -29,9 +29,11 @@ function App() {
             <ApiProvider>
                 <UserInfoContextProvider>
                     <GameStateContextProvider>
-                        <HotkeysProviderWithoutDialog>
-                            <InnerApp />
-                        </HotkeysProviderWithoutDialog>
+                        <ValidationContextProvider>
+                            <HotkeysProviderWithoutDialog>
+                                <InnerApp />
+                            </HotkeysProviderWithoutDialog>
+                        </ValidationContextProvider>
                     </GameStateContextProvider>
                 </UserInfoContextProvider>
             </ApiProvider>

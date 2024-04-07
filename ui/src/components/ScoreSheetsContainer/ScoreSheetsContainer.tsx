@@ -2,14 +2,16 @@ import { useCallback, useMemo, useState } from "react";
 import { Navbar, Tab, TabId, Tabs } from "@blueprintjs/core";
 import classNames from "classnames";
 
-import { ScoreSheet, ScoreOfficialsSheet } from "@components";
-import { TeamType } from "@contexts";
+import { ScoreSheet, ScoreOfficialsSheet, ValidityIcon } from "@components";
+import { TeamType, useValidation } from "@contexts";
 
 import sharedStyles from '@/Shared.module.scss';
 
 export const ScoreSheetsContainer = () => {
     const [selectedTab, setSelectedTab] = useState<TabId>('p1home');
     const [isTransitioning, setIsTransitioning] = useState(false);
+
+    const { scoreValidity } = useValidation();
 
     const handleTabChange = useCallback((tabId: TabId) => {
         setSelectedTab(tabId);
@@ -40,10 +42,10 @@ export const ScoreSheetsContainer = () => {
         <>
             <Navbar className={classNames(sharedStyles.subNavBar, sharedStyles.scrollableTabBar)} fixedToTop>
                 <Tabs id='Tabs' onChange={handleTabChange} selectedTabId={selectedTab} renderActiveTabPanelOnly fill>
-                    <Tab id='p1home' title='Period 1 (Home)' />
-                    <Tab id='p1away' title='Period 1 (Away)' />
-                    <Tab id='p2home' title='Period 2 (Home)' />
-                    <Tab id='p2away' title='Period 2 (Away)' />
+                    <Tab id='p1home'>Period 1 (Home)<ValidityIcon validity={scoreValidity.validity.home[1]} /></Tab>
+                    <Tab id='p1away'>Period 1 (Away)<ValidityIcon validity={scoreValidity.validity.away[1]} /></Tab>
+                    <Tab id='p2home'>Period 2 (Home)<ValidityIcon validity={scoreValidity.validity.home[2]} /></Tab>
+                    <Tab id='p2away'>Period 2 (Away)<ValidityIcon validity={scoreValidity.validity.away[2]} /></Tab>
                     <Tab id='officials' title='Officials' />
                 </Tabs>
             </Navbar>

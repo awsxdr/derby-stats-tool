@@ -2,8 +2,7 @@ import { ReactElement, useCallback, useMemo, useState } from 'react';
 import { Cell, Column, ColumnHeaderCell, EditableCell2 } from '@blueprintjs/table'
 
 import { StatsTable, ToggleCell } from '@components';
-import { LineupLine, Period, ScoreLine, TeamType, useGameContext } from '@contexts';
-import { useScoreValidator } from '@validators';
+import { LineupLine, Period, ScoreLine, TeamType, useGameContext, useValidation } from '@contexts';
 
 import styles from './ScoreSheet.module.css';
 
@@ -32,7 +31,8 @@ export const ScoreSheet = ({ teamType, period }: ScoreSheetProps) => {
     const oppositionScores = useMemo(() => gameState.scores[period][oppositionTeamType].lines, [gameState, oppositionTeamType, period]);
     const lineups = useMemo(() => gameState.lineups[period][teamType].lines, [gameState, period, teamType]);
 
-    const validity = useScoreValidator(period, teamType);
+    const { validators } = useValidation();
+    const { validity } = useMemo(() => validators[teamType][period].scoreValidity, [validators[teamType][period].scoreValidity]);
     
     const calculatePeriodTotal = useCallback((period: Period) =>
         gameState.scores[period][teamType].lines.reduce((p, j) => p + j.trips.reduce((p, t) => p + getTripValue(t), 0), 0),
@@ -353,7 +353,7 @@ export const ScoreSheet = ({ teamType, period }: ScoreSheetProps) => {
             <StatsTable
                 rowCount={39}
                 columnWidths={[40, 100, 20, 20, 20, 20, 20, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60]}
-                cellRendererDependencies={[cellRenderCount]}
+                cellRendererDependencies={[cellRenderCount, validity]}
                 getCellData={getCellData}
                 setCellData={setCellData}
                 deleteCellData={deleteCellData}

@@ -1,10 +1,10 @@
 import { ReactElement, useCallback, useMemo } from 'react';
 import { Cell, Column, ColumnHeaderCell, EditableCell2, Table2 } from '@blueprintjs/table'
 
-import { Penalty, PenaltyLine, Period, TeamType, useGameContext } from '@contexts';
+import { Penalty, PenaltyLine, Period, TeamType, useGameContext, useValidation } from '@contexts';
 import { StatsTable } from '@components';
 import { range } from '@/rangeMethods';
-import { OK, usePenaltyValidator } from '@validators';
+import { OK } from '@validators';
 
 import styles from './PenaltySheet.module.scss';
 
@@ -38,7 +38,8 @@ export const PenaltySheet = ({ teamType, period }: PenaltySheetProps) => {
     const DEFAULT_PENALTY: () => Penalty = () => ({ code: '', jam: '' });
     const DEFAULT_PENALTY_LINE: () => PenaltyLine = useCallback(() => Array.from({ length: 10 }, DEFAULT_PENALTY), []);
 
-    const validity = usePenaltyValidator(period, teamType);
+    const { validators } = useValidation();
+    const { validity } = useMemo(() => validators[teamType][period].penaltyValidity, [validators[teamType][period].penaltyValidity]);
 
     const createPenaltyLineIfMissing = useCallback((rowIndex: number) => {
         if(!penalties[rowIndex]) {
@@ -189,9 +190,9 @@ export const PenaltySheet = ({ teamType, period }: PenaltySheetProps) => {
           <Column columnHeaderCellRenderer={renderHeader("4")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(3), White, LightPink)} />
           <Column columnHeaderCellRenderer={renderHeader("5")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(4), White, LightPink)} />
           <Column columnHeaderCellRenderer={renderHeader("6")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(5), White, LightPink)} />
-          <Column columnHeaderCellRenderer={renderHeader("7")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(6), White, LightPink)} />
-          <Column columnHeaderCellRenderer={renderHeader("8")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(7), White, LightPink)} />
-          <Column columnHeaderCellRenderer={renderHeader("9")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(8), White, LightPink)} />
+          <Column columnHeaderCellRenderer={renderHeader("7")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(6), LightPink, DarkPink)} />
+          <Column columnHeaderCellRenderer={renderHeader("8")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(7), LightPink, DarkPink)} />
+          <Column columnHeaderCellRenderer={renderHeader("9")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(8), LightPink, DarkPink)} />
           <Column columnHeaderCellRenderer={renderHeader("FO/EXP")} cellRenderer={renderPenaltyCell(9)(DarkPink)} />
         </StatsTable>
         <Table2

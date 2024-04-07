@@ -1,14 +1,15 @@
 import { Period, TeamType, useGameContext } from "@contexts";
-import { useCallback, useMemo } from "react";
-import { OK, Validity, error, info, warning } from ".";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { OK, Validity, error, getLowestValidityLevel, info, warning } from "@validators";
+import { range } from "@/rangeMethods";
 
-type ScoreLineValidities = {
+export type ScoreLineValidities = {
     scorekeeper: Validity,
     jammerRef: Validity,
     lines: ScoreLineValidity[],
 }
 
-type ScoreLineValidity = {
+export type ScoreLineValidity = {
     jam: Validity,
     jammer: Validity,
     lost: Validity,
@@ -18,6 +19,24 @@ type ScoreLineValidity = {
     noInitial: Validity,
     trips: Validity[],
 }
+
+export const DEFAULT_SCORE_LINE_VALIDITY = (): ScoreLineValidity => ({
+    jam: OK,
+    jammer: OK,
+    lost: OK,
+    lead: OK,
+    call: OK,
+    injury: OK,
+    noInitial: OK,
+    trips: range(0, 8).map(() => OK),
+});
+
+export const DEFAULT_SCORE_VALIDITY = (): ScoreLineValidities => ({
+    scorekeeper: OK,
+    jammerRef: OK,
+    lines: range(1, 38).map(DEFAULT_SCORE_LINE_VALIDITY)
+});
+
 
 const isNumeric = (value: string) => !isNaN(parseInt(value));
 const getScoringTrips = (trips: string[]) => trips.filter(t => t?.trim() !== '');
@@ -31,17 +50,17 @@ export const useScoreValidator = (period: Period, team: TeamType) => {
     const oppositionScores = useMemo(() => game.scores[period][oppositionTeam], [game, period, oppositionTeam]);
 
     const validateOfficial = useCallback(
-        (officialName: string, role: string) => {
+        (_officialName: string, _role: string) => {
 
-            const official = game.officials.find(o => o.name.toLowerCase() === officialName.toLowerCase());
+            // const official = game.officials.find(o => o.name.toLowerCase() === officialName.toLowerCase());
 
-            if (!official) {
-                return warning('Official not found in roster');
-            }
+            // if (!official) {
+            //     return warning('Official not found in roster');
+            // }
 
-            if (official.role.trim().replace(/\s-/g, '').toLowerCase() !== role.trim().replace(/\s-/g, '').toLowerCase()) {
-                return warning('Official not listed against expected role');
-            }
+            // if (official.role.trim().replace(/\s-/g, '').toLowerCase() !== role.trim().replace(/\s-/g, '').toLowerCase()) {
+            //     return warning('Official not listed against expected role');
+            // }
 
             return OK;
         },
@@ -99,6 +118,40 @@ export const useScoreValidator = (period: Period, team: TeamType) => {
             return OK;
         },
         [game, scores, team]);
+
+    const validateLost = useCallback((lineIndex: number) => {
+
+        const { jammer: jammerNumber, lost, lead } = scores.lines[lineIndex];
+        const normalizedJammerNumber = jammerNumber.trim().toLowerCase();
+
+        const jammerIndex = game.rosters[team].skaters.findIndex(s => s.number.trim().toLowerCase() === normalizedJammerNumber);
+
+        let jamNumber = scores.lines[lineIndex].jam.trim().toLowerCase();
+        if (jamNumber === 'sp') {
+            jamNumber = scores.lines[lineIndex - 1]?.jam.trim().toLowerCase();
+        }
+
+        if (jammerIndex >= 0) {
+            const penalties = game.penalties[period][team].lines[jammerIndex];
+
+            const jamPenalties = penalties?.filter(p => p.jam === jamNumber);
+
+            const lostWithoutPenalty = lost && jamPenalties.length === 0;
+            if (lostWithoutPenalty) {
+                const nextLineIsStarPass = scores.lines[lineIndex + 1]?.jam.trim().toLowerCase() !== 'sp';
+                if (nextLineIsStarPass) {
+                    return info('Lost marked without penalty in jam. May be due to actions which don\'t cause a penalty.');
+                }
+            }
+
+            if (lead && !lost && jamPenalties.length > 0) {
+                return warning('Lost not marked despite penalty for jammer. Valid if penalty issued between jams.');
+            }
+        }
+
+        return OK;
+
+    }, [game, scores, team]);
     
     const validateCall = useCallback(
         (lineIndex: number) => {
@@ -117,7 +170,7 @@ export const useScoreValidator = (period: Period, team: TeamType) => {
                 return warning('Call when lead lost');
             }
 
-            if (lead && !call && scores.lines[lineIndex].trips.filter(t => t.trim().length > 0).length < 3) {
+            if (lead && !lost && !call && scores.lines[lineIndex].trips.filter(t => t.trim().length > 0).length < 3) {
                 return info('Jam suspiciously short for no call');
             }
 
@@ -148,29 +201,88 @@ export const useScoreValidator = (period: Period, team: TeamType) => {
         (lineIndex: number, tripIndex: number) => {
 
             const trip = scores.lines[lineIndex].trips[tripIndex];
+            const followingTrips = scores.lines[lineIndex].trips.slice(tripIndex + 1);
+            const normalizedTrip = trip.trim();
 
-            if (trip.trim() !== '' && !isNumeric(trip)) {
+            if (normalizedTrip !== '' && !isNumeric(normalizedTrip)) {
                 return error('Invalid character in trip');
             }
+
+            const numericTrip = parseInt(normalizedTrip);
+
+            const tooManyPointsOnFirstScoringTrip = tripIndex === 0 && numericTrip > 8;
+            const tooManyPointsOnLaterScoringTrips = tripIndex > 0 && numericTrip > 4;
+
+            if (tooManyPointsOnFirstScoringTrip || tooManyPointsOnLaterScoringTrips || numericTrip < 0) {
+                return error('Invalid value for trip');
+            }
+
+            const { jam: jamNumber } = scores.lines[lineIndex];
+            const lineIsStarPass = jamNumber.trim().toLowerCase() === 'sp';
+
+            const followingTripsWithValues = followingTrips.filter(t => t.trim() !== '');
+            const tripWithoutValueAndFollowingTripsWithValue = normalizedTrip === '' && followingTripsWithValues.length > 0;
+            if (tripWithoutValueAndFollowingTripsWithValue && !lineIsStarPass) {
+                return error('Missing value for trip');
+            }
             
+            if (lineIsStarPass) {
+                const previousLineTrips = scores.lines[lineIndex - 1]?.trips.map(t => t.trim()) ?? range(1, 9).map(() => '');
+
+                const tripWithoutValueAndFollowingTripsWithValueAndPreviousLineBlank = 
+                    tripWithoutValueAndFollowingTripsWithValue && previousLineTrips[tripIndex] === '';
+                
+                if (tripWithoutValueAndFollowingTripsWithValueAndPreviousLineBlank) {
+                    return error('Missing value for trip');
+                }
+
+                if (trip.trim() !== '' && previousLineTrips[tripIndex] !== '') {
+                    return error('Both lines in a star pass contain points');
+                }
+            }
+
             return OK;
 
         }, [scores]);
 
-    const validity = useMemo<ScoreLineValidities>(() => ({
-        scorekeeper: validateOfficial(scores.scorekeeper, "scorekeeper"),
-        jammerRef: validateOfficial(scores.jammerRef, "jammerref"),
-        lines: scores.lines.map((line, lineIndex) => ({
-            jam: validateJamNumber(lineIndex),
-            jammer: validateJammerNumber(lineIndex),
-            lost: OK,
-            lead: OK,
-            call: validateCall(lineIndex),
-            injury: OK,
-            noInitial: validateNoInitial(lineIndex),
-            trips: line.trips.map((_, tripIndex) => validateTrip(lineIndex, tripIndex)),
-        }))
-    }), [scores, validateOfficial, validateJamNumber, validateJammerNumber, validateCall, validateNoInitial, validateTrip]);
+    const [validity, setValidity] = useState<ScoreLineValidities>(DEFAULT_SCORE_VALIDITY());
 
-    return validity;
+    useEffect(() => {
+        new Promise((resolve) => {
+
+            setValidity({
+                scorekeeper: validateOfficial(scores.scorekeeper, "scorekeeper"),
+                jammerRef: validateOfficial(scores.jammerRef, "jammerref"),
+                lines: scores.lines.map((line, lineIndex) => ({
+                    jam: validateJamNumber(lineIndex),
+                    jammer: validateJammerNumber(lineIndex),
+                    lost: validateLost(lineIndex),
+                    lead: OK,
+                    call: validateCall(lineIndex),
+                    injury: OK,
+                    noInitial: validateNoInitial(lineIndex),
+                    trips: line.trips.map((_, tripIndex) => validateTrip(lineIndex, tripIndex)),
+                }))
+            });
+
+            resolve(0);
+        });
+    }, [scores, validateOfficial, validateJamNumber, validateJammerNumber, validateCall, validateNoInitial, validateTrip]);
+
+    const validityLevel = useMemo(() => getLowestValidityLevel([
+        validity.jammerRef.validity,
+        validity.scorekeeper.validity,
+        ...validity.lines.map(l => getLowestValidityLevel([
+            l.call.validity,
+            l.injury.validity,
+            l.jam.validity,
+            l.jammer.validity,
+            l.lead.validity,
+            l.lost.validity,
+            l.noInitial.validity,
+            ...l.trips.map(t => t.validity)
+        ]))
+    ]), [validity]);
+
+    return { validity, validityLevel };
 };

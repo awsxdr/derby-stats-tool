@@ -101,7 +101,7 @@ export enum SkaterType {
     Blocker3 = 'blocker3',
 }
 
-type SkaterLineups = { [skater in SkaterType]: LineupItem };
+export type SkaterLineups = { [skater in SkaterType]: LineupItem };
 
 export type LineupLine = {
     skaters: SkaterLineups,
@@ -263,7 +263,6 @@ export const GameStateContextProvider = ({ children }: PropsWithChildren) => {
     useEffect(() => {
         const timeout = setTimeout(() => {
             if (isDirty && !isFaulted) {
-                console.log("Writing");
                 api?.setDocument(state)
                     .then(() => {
                         setIsDirty(false);

@@ -1,26 +1,51 @@
 import { Period, SkaterType, TeamType, useGameContext } from "@contexts";
-import { useCallback, useMemo } from "react";
-import { OK, Validity, error } from ".";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { OK, Validity, error, getLowestValidityLevel } from ".";
+import { range } from "@/rangeMethods";
 
-type LineupItemValidity = {
+export type LineupItemValidity = {
     number: Validity,
     events: Validity[],
 };
 
-type SkaterLineupValidities = { [skater in SkaterType]: LineupItemValidity };
+export type SkaterLineupValidities = { [skater in SkaterType]: LineupItemValidity };
 
-type LineupLineValidity = {
+export type LineupLineValidity = {
     skaters: SkaterLineupValidities,
     jamNumber: Validity,
     noPivot: Validity,
 };
 
-type LineupLineValidities = {
+export type LineupLineValidities = {
     lineupTracker: Validity,
     lines: LineupLineValidity[],
 };
 
 const VALID_EVENTS = ['S', '$', '-', '+', '3'];
+
+export const DEFAULT_LINEUP_ITEM_VALIDITY = (): LineupItemValidity => ({
+    number: OK,
+    events: range(1, 3).map(() => OK),
+});
+
+export const DEFAULT_SKATER_LINEUP_VALIDITIES = (): SkaterLineupValidities => ({
+    jammer: DEFAULT_LINEUP_ITEM_VALIDITY(),
+    pivot: DEFAULT_LINEUP_ITEM_VALIDITY(),
+    blocker1: DEFAULT_LINEUP_ITEM_VALIDITY(),
+    blocker2: DEFAULT_LINEUP_ITEM_VALIDITY(),
+    blocker3: DEFAULT_LINEUP_ITEM_VALIDITY(),
+})
+
+export const DEFAULT_LINEUP_LINE_VALIDITY = (): LineupLineValidity => ({
+    jamNumber: OK,
+    noPivot: OK,
+    skaters: DEFAULT_SKATER_LINEUP_VALIDITIES(),
+});
+
+export const DEFAULT_LINEUP_LINES_VALIDITY = (): LineupLineValidities => ({
+    lineupTracker: OK,
+    lines: range(1, 38).map(DEFAULT_LINEUP_LINE_VALIDITY),
+});
 
 export const useLineupValidator = (period: Period, team: TeamType) => {
     const { gameState: game } = useGameContext();
@@ -89,20 +114,46 @@ export const useLineupValidator = (period: Period, team: TeamType) => {
         events: lineups.lines[lineIndex]?.skaters[skaterType].events.map((_, eventIndex) => validateEvent(skaterType, lineIndex, eventIndex))
     }), [lineups, validateSkaterNumber, validateEvent]);
 
-    const validity = useMemo<LineupLineValidities>(() => ({
-        lineupTracker: OK,
-        lines: lineups.lines?.map((_, lineIndex) => ({
-            jamNumber: OK,
-            noPivot: validateNoPivot(lineIndex),
-            skaters: {
-                jammer: validateSkater(SkaterType.Jammer, lineIndex),
-                pivot: validateSkater(SkaterType.Pivot, lineIndex),
-                blocker1: validateSkater(SkaterType.Blocker1, lineIndex),
-                blocker2: validateSkater(SkaterType.Blocker2, lineIndex),
-                blocker3: validateSkater(SkaterType.Blocker3, lineIndex),
-            },
-        }))
-    }), [lineups, validateSkater, validateNoPivot]);
+    const [validity, setValidity] = useState<LineupLineValidities>(DEFAULT_LINEUP_LINES_VALIDITY());
 
-    return validity;
+    useEffect(() => {
+        new Promise(resolve => {
+            setValidity({
+                lineupTracker: OK,
+                lines: lineups.lines?.map((_, lineIndex) => ({
+                    jamNumber: OK,
+                    noPivot: validateNoPivot(lineIndex),
+                    skaters: {
+                        jammer: validateSkater(SkaterType.Jammer, lineIndex),
+                        pivot: validateSkater(SkaterType.Pivot, lineIndex),
+                        blocker1: validateSkater(SkaterType.Blocker1, lineIndex),
+                        blocker2: validateSkater(SkaterType.Blocker2, lineIndex),
+                        blocker3: validateSkater(SkaterType.Blocker3, lineIndex),
+                    },
+                }))
+            });
+
+            resolve(0);
+        });
+    }, [lineups, validateSkater, validateNoPivot]);
+
+    const validityLevel = useMemo(() => getLowestValidityLevel([
+        validity.lineupTracker.validity,
+        ...validity.lines.map(l => getLowestValidityLevel([
+            l.jamNumber.validity,
+            l.noPivot.validity,
+            l.skaters.jammer.number.validity,
+            ...l.skaters.jammer.events.map(e => e.validity),
+            l.skaters.pivot.number.validity,
+            ...l.skaters.pivot.events.map(e => e.validity),
+            l.skaters.blocker1.number.validity,
+            ...l.skaters.blocker1.events.map(e => e.validity),
+            l.skaters.blocker2.number.validity,
+            ...l.skaters.blocker2.events.map(e => e.validity),
+            l.skaters.blocker3.number.validity,
+            ...l.skaters.blocker3.events.map(e => e.validity),
+        ]))
+    ]), []);
+
+    return { validity, validityLevel };
 };

@@ -1,21 +1,16 @@
 import { ReactElement, useCallback, useMemo, useState } from 'react';
 import { Cell, Column, ColumnHeaderCell, EditableCell2 } from '@blueprintjs/table'
+import classNames from 'classnames';
 
 import { StatsTable, ToggleCell } from '@components'
 import { LineupLine, Period, SkaterType, TeamType, useGameContext, useValidation } from '@contexts';
 import { OK, Validity } from '@validators';
+import * as Colors from '@/Colors';
 
 import styles from './LineupSheet.module.css';
-import classNames from 'classnames';
 
 type ContentRendererFn = (rowIndex: number) => ReactElement;
 type CellRendererFn = (color: string) => ContentRendererFn;
-
-const DarkBlue = "#b5daff";
-const MediumBlue = "#cee7ff"
-const LightBlue = "#e6f2ff";
-const White = "#ffffff";
-const Black = "#000000";
 
 interface LineupSheetProps {
     teamType: TeamType,
@@ -139,7 +134,7 @@ export const LineupSheet = ({ teamType, period }: LineupSheetProps) => {
     );
   
     const renderHeader = (name: string) => () => (
-      <ColumnHeaderCell style={{ backgroundColor: Black, color: White }}>
+      <ColumnHeaderCell style={{ backgroundColor: Colors.Black, color: Colors.White }}>
         <span style={{ fontSize: '8pt' }}>{ name }</span>
       </ColumnHeaderCell>
     );
@@ -241,28 +236,28 @@ export const LineupSheet = ({ teamType, period }: LineupSheetProps) => {
           onBatchOperationCompleted={updateGameState}
           cellRendererDependencies={[cellRenderCount, validity]}
         >
-          <Column columnHeaderCellRenderer={renderHeader("Jam")} cellRenderer={renderAlternatingColorCell(renderJamNumberCell, LightBlue, MediumBlue)} />
-          <Column columnHeaderCellRenderer={renderHeader("No Pivot")} cellRenderer={renderAlternatingColorCell(renderNoPivotCell, LightBlue, MediumBlue)} />
-          <Column columnHeaderCellRenderer={renderHeader("Jammer")} cellRenderer={renderAlternatingColorCell(renderReadOnlySkaterNumberCell(SkaterType.Jammer), White, LightBlue)} />
-          <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Jammer, 0), DarkBlue)} />
-          <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Jammer, 1), DarkBlue)} />
-          <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Jammer, 2), DarkBlue)} />
-          <Column columnHeaderCellRenderer={renderHeader("Pivot")} cellRenderer={renderAlternatingColorCell(renderSkaterNumberCell(SkaterType.Pivot), White, LightBlue)} />
-          <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Pivot, 0), DarkBlue)} />
-          <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Pivot, 1), DarkBlue)} />
-          <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Pivot, 2), DarkBlue)} />
-          <Column columnHeaderCellRenderer={renderHeader("Blocker")} cellRenderer={renderAlternatingColorCell(renderSkaterNumberCell(SkaterType.Blocker1), White, LightBlue)} />
-          <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Blocker1, 0), DarkBlue)} />
-          <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Blocker1, 1), DarkBlue)} />
-          <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Blocker1, 2), DarkBlue)} />
-          <Column columnHeaderCellRenderer={renderHeader("Blocker")} cellRenderer={renderAlternatingColorCell(renderSkaterNumberCell(SkaterType.Blocker2), White, LightBlue)} />
-          <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Blocker2, 0), DarkBlue)} />
-          <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Blocker2, 1), DarkBlue)} />
-          <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Blocker2, 2), DarkBlue)} />
-          <Column columnHeaderCellRenderer={renderHeader("Blocker")} cellRenderer={renderAlternatingColorCell(renderSkaterNumberCell(SkaterType.Blocker3), White, LightBlue)} />
-          <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Blocker3, 0), DarkBlue)} />
-          <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Blocker3, 1), DarkBlue)} />
-          <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Blocker3, 2), DarkBlue)} />
+          <Column columnHeaderCellRenderer={renderHeader("Jam")} cellRenderer={renderAlternatingColorCell(renderJamNumberCell, Colors.LightBlue, Colors.MediumBlue)} />
+          <Column columnHeaderCellRenderer={renderHeader("No Pivot")} cellRenderer={renderAlternatingColorCell(renderNoPivotCell, Colors.LightBlue, Colors.MediumBlue)} />
+          <Column columnHeaderCellRenderer={renderHeader("Jammer")} cellRenderer={renderAlternatingColorCell(renderReadOnlySkaterNumberCell(SkaterType.Jammer), Colors.White, Colors.LightBlue)} />
+          <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Jammer, 0), Colors.DarkBlue)} />
+          <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Jammer, 1), Colors.DarkBlue)} />
+          <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Jammer, 2), Colors.DarkBlue)} />
+          <Column columnHeaderCellRenderer={renderHeader("Pivot")} cellRenderer={renderAlternatingColorCell(renderSkaterNumberCell(SkaterType.Pivot), Colors.White, Colors.LightBlue)} />
+          <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Pivot, 0), Colors.DarkBlue)} />
+          <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Pivot, 1), Colors.DarkBlue)} />
+          <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Pivot, 2), Colors.DarkBlue)} />
+          <Column columnHeaderCellRenderer={renderHeader("Blocker")} cellRenderer={renderAlternatingColorCell(renderSkaterNumberCell(SkaterType.Blocker1), Colors.White, Colors.LightBlue)} />
+          <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Blocker1, 0), Colors.DarkBlue)} />
+          <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Blocker1, 1), Colors.DarkBlue)} />
+          <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Blocker1, 2), Colors.DarkBlue)} />
+          <Column columnHeaderCellRenderer={renderHeader("Blocker")} cellRenderer={renderAlternatingColorCell(renderSkaterNumberCell(SkaterType.Blocker2), Colors.White, Colors.LightBlue)} />
+          <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Blocker2, 0), Colors.DarkBlue)} />
+          <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Blocker2, 1), Colors.DarkBlue)} />
+          <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Blocker2, 2), Colors.DarkBlue)} />
+          <Column columnHeaderCellRenderer={renderHeader("Blocker")} cellRenderer={renderAlternatingColorCell(renderSkaterNumberCell(SkaterType.Blocker3), Colors.White, Colors.LightBlue)} />
+          <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Blocker3, 0), Colors.DarkBlue)} />
+          <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Blocker3, 1), Colors.DarkBlue)} />
+          <Column columnHeaderCellRenderer={renderHeader("")} cellRenderer={renderConstantColorCell(renderSkaterEventCell(SkaterType.Blocker3, 2), Colors.DarkBlue)} />
         </StatsTable>
       </div>
     )

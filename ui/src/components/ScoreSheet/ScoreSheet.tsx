@@ -3,16 +3,12 @@ import { Cell, Column, ColumnHeaderCell, EditableCell2 } from '@blueprintjs/tabl
 
 import { StatsTable, ToggleCell } from '@components';
 import { LineupLine, Period, ScoreLine, TeamType, useGameContext, useValidation } from '@contexts';
+import * as Colors from '@/Colors';
 
 import styles from './ScoreSheet.module.css';
 
 type ContentRendererFn = (rowIndex: number) => ReactElement;
 type CellRendererFn = (color: string) => ContentRendererFn;
-
-const White = "#ffffff";
-const Black = "#000000";
-const DarkGreen = "#d3ecb5";
-const LightGreen = "#e9f5da";
 
 interface ScoreSheetProps {
     teamType: TeamType,
@@ -256,13 +252,13 @@ export const ScoreSheet = ({ teamType, period }: ScoreSheetProps) => {
     );
   
     const renderHorizontalHeader = (name: string) => () => (
-        <ColumnHeaderCell style={{ backgroundColor: Black, color: White }}>
+        <ColumnHeaderCell style={{ backgroundColor: Colors.Black, color: Colors.White }}>
             <span style={{ fontSize: '8pt' }}>{ name }</span>
         </ColumnHeaderCell>
     );
   
     const renderVerticalHeader = (name: string) => () => (
-        <ColumnHeaderCell style={{ backgroundColor: Black, color: White }} className='verticalHeader'>
+        <ColumnHeaderCell style={{ backgroundColor: Colors.Black, color: Colors.White }} className='verticalHeader'>
             <span style={{ fontSize: '8pt' }}>{ name }</span>
         </ColumnHeaderCell>
     )
@@ -359,24 +355,24 @@ export const ScoreSheet = ({ teamType, period }: ScoreSheetProps) => {
                 deleteCellData={deleteCellData}
                 onBatchOperationCompleted={updateGameState}
             >
-                <Column columnHeaderCellRenderer={renderHorizontalHeader("Jam")} cellRenderer={renderAlternatingColorCell(renderJamNumberCell, LightGreen, DarkGreen)} />
-                <Column columnHeaderCellRenderer={renderHorizontalHeader("Jammer's number")} cellRenderer={renderAlternatingColorCell(renderJammerNumberCell, White, LightGreen)} />
-                <Column columnHeaderCellRenderer={renderVerticalHeader("Lost")} cellRenderer={renderAlternatingColorCell(renderLostCell, LightGreen, DarkGreen)} />
-                <Column columnHeaderCellRenderer={renderVerticalHeader("Lead")} cellRenderer={renderAlternatingColorCell(renderLeadCell, LightGreen, DarkGreen)} />
-                <Column columnHeaderCellRenderer={renderVerticalHeader("Call")} cellRenderer={renderAlternatingColorCell(renderCallCell, LightGreen, DarkGreen)} />
-                <Column columnHeaderCellRenderer={renderVerticalHeader("Inj.")} cellRenderer={renderAlternatingColorCell(renderInjuryCell, LightGreen, DarkGreen)} />
-                <Column columnHeaderCellRenderer={renderVerticalHeader("NI")} cellRenderer={renderAlternatingColorCell(renderNoInitialCell, LightGreen, DarkGreen)} />
-                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 2")} cellRenderer={renderAlternatingColorCell(renderTripCell(0), White, LightGreen)} />
-                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 3")} cellRenderer={renderAlternatingColorCell(renderTripCell(1), White, LightGreen)} />
-                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 4")} cellRenderer={renderAlternatingColorCell(renderTripCell(2), White, LightGreen)} />
-                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 5")} cellRenderer={renderAlternatingColorCell(renderTripCell(3), White, LightGreen)} />
-                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 6")} cellRenderer={renderAlternatingColorCell(renderTripCell(4), White, LightGreen)} />
-                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 7")} cellRenderer={renderAlternatingColorCell(renderTripCell(5), White, LightGreen)} />
-                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 8")} cellRenderer={renderAlternatingColorCell(renderTripCell(6), White, LightGreen)} />
-                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 9")} cellRenderer={renderAlternatingColorCell(renderTripCell(7), White, LightGreen)} />
-                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 10")} cellRenderer={renderAlternatingColorCell(renderTripCell(8), White, LightGreen)} />
-                <Column columnHeaderCellRenderer={renderHorizontalHeader("Jam Total")} cellRenderer={renderAlternatingColorCell(renderJamTotalCell, LightGreen, DarkGreen)} />
-                <Column columnHeaderCellRenderer={renderHorizontalHeader("Game Total")} cellRenderer={renderConstantColorCell(renderGameTotalCell, DarkGreen)} />
+                <Column columnHeaderCellRenderer={renderHorizontalHeader("Jam")} cellRenderer={renderAlternatingColorCell(renderJamNumberCell, Colors.LightGreen, Colors.DarkGreen)} />
+                <Column columnHeaderCellRenderer={renderHorizontalHeader("Jammer's number")} cellRenderer={renderAlternatingColorCell(renderJammerNumberCell, Colors.White, Colors.LightGreen)} />
+                <Column columnHeaderCellRenderer={renderVerticalHeader("Lost")} cellRenderer={renderAlternatingColorCell(renderLostCell, Colors.LightGreen, Colors.DarkGreen)} />
+                <Column columnHeaderCellRenderer={renderVerticalHeader("Lead")} cellRenderer={renderAlternatingColorCell(renderLeadCell, Colors.LightGreen, Colors.DarkGreen)} />
+                <Column columnHeaderCellRenderer={renderVerticalHeader("Call")} cellRenderer={renderAlternatingColorCell(renderCallCell, Colors.LightGreen, Colors.DarkGreen)} />
+                <Column columnHeaderCellRenderer={renderVerticalHeader("Inj.")} cellRenderer={renderAlternatingColorCell(renderInjuryCell, Colors.LightGreen, Colors.DarkGreen)} />
+                <Column columnHeaderCellRenderer={renderVerticalHeader("NI")} cellRenderer={renderAlternatingColorCell(renderNoInitialCell, Colors.LightGreen, Colors.DarkGreen)} />
+                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 2")} cellRenderer={renderAlternatingColorCell(renderTripCell(0), Colors.White, Colors.LightGreen)} />
+                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 3")} cellRenderer={renderAlternatingColorCell(renderTripCell(1), Colors.White, Colors.LightGreen)} />
+                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 4")} cellRenderer={renderAlternatingColorCell(renderTripCell(2), Colors.White, Colors.LightGreen)} />
+                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 5")} cellRenderer={renderAlternatingColorCell(renderTripCell(3), Colors.White, Colors.LightGreen)} />
+                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 6")} cellRenderer={renderAlternatingColorCell(renderTripCell(4), Colors.White, Colors.LightGreen)} />
+                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 7")} cellRenderer={renderAlternatingColorCell(renderTripCell(5), Colors.White, Colors.LightGreen)} />
+                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 8")} cellRenderer={renderAlternatingColorCell(renderTripCell(6), Colors.White, Colors.LightGreen)} />
+                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 9")} cellRenderer={renderAlternatingColorCell(renderTripCell(7), Colors.White, Colors.LightGreen)} />
+                <Column columnHeaderCellRenderer={renderHorizontalHeader("Trip 10")} cellRenderer={renderAlternatingColorCell(renderTripCell(8), Colors.White, Colors.LightGreen)} />
+                <Column columnHeaderCellRenderer={renderHorizontalHeader("Jam Total")} cellRenderer={renderAlternatingColorCell(renderJamTotalCell, Colors.LightGreen, Colors.DarkGreen)} />
+                <Column columnHeaderCellRenderer={renderHorizontalHeader("Game Total")} cellRenderer={renderConstantColorCell(renderGameTotalCell, Colors.DarkGreen)} />
             </StatsTable>
         </div>
     )

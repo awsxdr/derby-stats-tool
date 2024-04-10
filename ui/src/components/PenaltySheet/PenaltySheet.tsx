@@ -5,17 +5,12 @@ import { Penalty, PenaltyLine, Period, TeamType, useGameContext, useValidation }
 import { StatsTable } from '@components';
 import { range } from '@/helperMethods';
 import { OK } from '@validators';
+import * as Colors from '@/Colors';
 
 import styles from './PenaltySheet.module.scss';
 
 type ContentRendererFn = (rowIndex: number) => ReactElement;
 type CellRendererFn = (color: string) => ContentRendererFn;
-
-const DarkPink = "#ffd0ff";
-const LightPink = "#ffe8ff";
-const White = "#ffffff";
-const Black = "#000000";
-const Gray = "#a0a0a0";
 
 interface PenaltySheetProps {
     teamType: TeamType,
@@ -99,7 +94,7 @@ export const PenaltySheet = ({ teamType, period }: PenaltySheetProps) => {
     );
 
     const renderPenaltyCell = (column: number) => (color: string) => (row: number) => {
-        const calculatedColor = column >= previousPeriodPenaltyCounts[Math.floor(row / 2)] ? color : Gray;
+        const calculatedColor = column >= previousPeriodPenaltyCounts[Math.floor(row / 2)] ? color : Colors.Gray;
 
         return row % 2 == 0 
             ? renderPenaltyCodeCell(column, Math.floor(row / 2), calculatedColor)
@@ -129,7 +124,7 @@ export const PenaltySheet = ({ teamType, period }: PenaltySheetProps) => {
         , []);
   
     const renderHeader = (name: string) => () => (
-      <ColumnHeaderCell style={{ backgroundColor: Black, color: White }}>
+      <ColumnHeaderCell style={{ backgroundColor: Colors.Black, color: Colors.White }}>
         <span style={{ fontSize: '8pt' }}>{ name }</span>
       </ColumnHeaderCell>
     );
@@ -180,7 +175,7 @@ export const PenaltySheet = ({ teamType, period }: PenaltySheetProps) => {
             selectedRegions={[]}
             className={styles.penaltySideTable}
           >
-            <Column columnHeaderCellRenderer={renderHeader("#")} cellRenderer={renderAlternatingColorCell(1, renderSkaterNumberCell, LightPink, DarkPink)} />
+            <Column columnHeaderCellRenderer={renderHeader("#")} cellRenderer={renderAlternatingColorCell(1, renderSkaterNumberCell, Colors.LightPink, Colors.DarkPink)} />
         </Table2>
         <StatsTable
           rowCount={40} 
@@ -191,16 +186,16 @@ export const PenaltySheet = ({ teamType, period }: PenaltySheetProps) => {
           onBatchOperationCompleted={updateGameState}
           cellRendererDependencies={[validity, cellRenderCount]}
         >
-          <Column columnHeaderCellRenderer={renderHeader("1")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(0), White, LightPink)} />
-          <Column columnHeaderCellRenderer={renderHeader("2")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(1), White, LightPink)} />
-          <Column columnHeaderCellRenderer={renderHeader("3")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(2), White, LightPink)} />
-          <Column columnHeaderCellRenderer={renderHeader("4")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(3), White, LightPink)} />
-          <Column columnHeaderCellRenderer={renderHeader("5")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(4), White, LightPink)} />
-          <Column columnHeaderCellRenderer={renderHeader("6")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(5), White, LightPink)} />
-          <Column columnHeaderCellRenderer={renderHeader("7")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(6), LightPink, DarkPink)} />
-          <Column columnHeaderCellRenderer={renderHeader("8")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(7), LightPink, DarkPink)} />
-          <Column columnHeaderCellRenderer={renderHeader("9")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(8), LightPink, DarkPink)} />
-          <Column columnHeaderCellRenderer={renderHeader("FO/EXP")} cellRenderer={renderPenaltyCell(9)(DarkPink)} />
+          <Column columnHeaderCellRenderer={renderHeader("1")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(0), Colors.White, Colors.LightPink)} />
+          <Column columnHeaderCellRenderer={renderHeader("2")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(1), Colors.White, Colors.LightPink)} />
+          <Column columnHeaderCellRenderer={renderHeader("3")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(2), Colors.White, Colors.LightPink)} />
+          <Column columnHeaderCellRenderer={renderHeader("4")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(3), Colors.White, Colors.LightPink)} />
+          <Column columnHeaderCellRenderer={renderHeader("5")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(4), Colors.White, Colors.LightPink)} />
+          <Column columnHeaderCellRenderer={renderHeader("6")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(5), Colors.White, Colors.LightPink)} />
+          <Column columnHeaderCellRenderer={renderHeader("7")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(6), Colors.LightPink, Colors.DarkPink)} />
+          <Column columnHeaderCellRenderer={renderHeader("8")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(7), Colors.LightPink, Colors.DarkPink)} />
+          <Column columnHeaderCellRenderer={renderHeader("9")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(8), Colors.LightPink, Colors.DarkPink)} />
+          <Column columnHeaderCellRenderer={renderHeader("FO/EXP")} cellRenderer={renderPenaltyCell(9)(Colors.DarkPink)} />
         </StatsTable>
         <Table2
             numRows={20}
@@ -216,7 +211,7 @@ export const PenaltySheet = ({ teamType, period }: PenaltySheetProps) => {
             cellRendererDependencies={[gameState]}
             className={styles.penaltySideTable}
           >
-            <Column columnHeaderCellRenderer={renderHeader("Total")} cellRenderer={renderAlternatingColorCell(1, renderTotalsCell, White, LightPink)} />
+            <Column columnHeaderCellRenderer={renderHeader("Total")} cellRenderer={renderAlternatingColorCell(1, renderTotalsCell, Colors.White, Colors.LightPink)} />
         </Table2>
       </div>
     )

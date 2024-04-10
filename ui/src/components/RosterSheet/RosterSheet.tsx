@@ -1,15 +1,12 @@
 import { useCallback, useMemo } from 'react';
 import { Cell, Column, ColumnHeaderCell, EditableCell2 } from '@blueprintjs/table'
 import { FormGroup, InputGroup } from '@blueprintjs/core';
+import * as Colors from '@/Colors';
 
 import { StatsTable } from '@components';
 import { TeamType, useGameContext } from '@contexts';
 
 import styles from './RosterSheet.module.css';
-
-const LightPink = "#ffe8ff";
-const White = "#ffffff";
-const Black = "#000000";
 
 interface RosterSheetProps {
     teamType: TeamType,
@@ -87,7 +84,7 @@ export const RosterSheet = ({ teamType }: RosterSheetProps) => {
         );
   
     const renderHeader = (name: string) => () => (
-        <ColumnHeaderCell style={{ backgroundColor: Black, color: White }}>
+        <ColumnHeaderCell style={{ backgroundColor: Colors.Black, color: Colors.White }}>
             <span style={{ fontSize: '8pt' }}>{ name }</span>
         </ColumnHeaderCell>
     );
@@ -170,9 +167,9 @@ export const RosterSheet = ({ teamType }: RosterSheetProps) => {
                     deleteCellData={deleteCellData}
                     onBatchOperationCompleted={handleBatchOperationCompleted}
                 >
-                    <Column columnHeaderCellRenderer={renderHeader("# of players")} cellRenderer={renderPlayerNumberCell(LightPink)} />
-                    <Column columnHeaderCellRenderer={renderHeader("Skater #")} cellRenderer={renderSkaterNumberCell(White)} />
-                    <Column columnHeaderCellRenderer={renderHeader("Skater Name")} cellRenderer={renderSkaterNameCell(White)} />
+                    <Column columnHeaderCellRenderer={renderHeader("# of players")} cellRenderer={renderPlayerNumberCell(Colors.LightPink)} />
+                    <Column columnHeaderCellRenderer={renderHeader("Skater #")} cellRenderer={renderSkaterNumberCell(Colors.White)} />
+                    <Column columnHeaderCellRenderer={renderHeader("Skater Name")} cellRenderer={renderSkaterNameCell(Colors.White)} />
                 </StatsTable>
             </div>
         </div>

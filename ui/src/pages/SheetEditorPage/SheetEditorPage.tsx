@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import { Alert, Alignment, Button, Card, Icon, Intent, Menu, MenuDivider, MenuItem, Navbar, Overlay2, Popover, Spinner, Tab, TabId, Tabs, Tooltip } from '@blueprintjs/core'
 import classNames from 'classnames';
 
@@ -10,7 +10,9 @@ import { useApiContext } from '@/Api';
 import styles from './SheetEditorPage.module.scss';
 
 export const SheetEditorPage = () => {
-    const [selectedTab, setSelectedTab] = useState<TabId>('igrf');
+    const { tab: selectedTab } = useParams();
+    const navigate = useNavigate();
+
     const [isConfirmNewOpen, setIsConfirmNewOpen] = useState(false);
     const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
     const [isWarnNoBlankStatsOpen, setIsWarnNoBlankStatsOpen] = useState(false);
@@ -27,7 +29,7 @@ export const SheetEditorPage = () => {
     const showSpinner = useMemo(() => !user || isLoading, [user, isLoading]);
   
     const handleTabChange = (tabId: TabId) => {
-        setSelectedTab(tabId);
+        navigate(`/edit/${tabId}`);
     }
   
     const confirmNew = useCallback(() => {

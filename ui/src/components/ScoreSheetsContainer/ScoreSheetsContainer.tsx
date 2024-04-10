@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Navbar, Tab, TabId, Tabs } from "@blueprintjs/core";
 import classNames from "classnames";
 
@@ -6,17 +6,26 @@ import { ScoreSheet, ScoreOfficialsSheet, ValidityIcon } from "@components";
 import { TeamType, useValidation } from "@contexts";
 
 import sharedStyles from '@/Shared.module.scss';
+import { useNavigate, useParams } from "react-router";
 
 export const ScoreSheetsContainer = () => {
-    const [selectedTab, setSelectedTab] = useState<TabId>('p1home');
+    const { subTab: selectedTab } = useParams();
+    const navigate = useNavigate();
+
     const [isTransitioning, setIsTransitioning] = useState(false);
 
     const { scoreValidity } = useValidation();
 
+    useEffect(() => {
+        if (!selectedTab) {
+            navigate('/edit/score/p1home', { replace: true });
+        }
+    }, [selectedTab, navigate]);
+
     const handleTabChange = useCallback((tabId: TabId) => {
-        setSelectedTab(tabId);
+        navigate(`/edit/score/${tabId}`);
         setIsTransitioning(true);
-    }, [setSelectedTab, setIsTransitioning]);
+    }, [navigate, setIsTransitioning]);
 
     const body = useMemo(() => {
         if(isTransitioning) {

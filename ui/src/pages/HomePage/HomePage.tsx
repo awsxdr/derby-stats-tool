@@ -11,11 +11,15 @@ export const HomePage = () => {
     const router = createBrowserRouter([
         {
             path: '/',
-            loader: () => loginStatus === LoginStatus.LOGGED_IN ? redirect("/edit") : null,
+            loader: () => loginStatus === LoginStatus.LOGGED_IN ? redirect("/edit/igrf/game") : null,
             element: <SplashPage />
         },
         {
             path: '/edit',
+            loader: () => redirect('/edit/igrf/game'),
+        },
+        {
+            path: '/edit/:tab/:subTab?',
             loader: () => loginStatus === LoginStatus.LOGGED_IN ? null : redirect("/"),
             element: <SheetEditorPage />
         },

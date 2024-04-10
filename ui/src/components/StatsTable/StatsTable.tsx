@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { ColumnProps, FocusedCellCoordinates, Region, RenderMode, Table2 } from "@blueprintjs/table";
-import { range } from "@/rangeMethods";
+import { range } from "@/helperMethods";
 import { HotkeysTarget2 } from "@blueprintjs/core";
 import { OverridableHotkeyConfig } from "@/contexts";
 

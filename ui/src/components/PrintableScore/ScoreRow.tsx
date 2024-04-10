@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import { ScoreLine } from '@contexts';
 
 import styles from './ScoreRow.module.scss';
-import { range } from '@/rangeMethods';
+import { range } from '@/helperMethods';
 
 interface ScoreRowProps {
     rowIndex: number;

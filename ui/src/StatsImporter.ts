@@ -3,7 +3,7 @@ import * as ExcelJS from 'exceljs';
 import { GameState, LineupItem, useGameContext } from "./contexts";
 import { AppToaster } from "./components";
 import { Intent } from "@blueprintjs/core";
-import { range } from "./rangeMethods";
+import { range } from "./helperMethods";
 
 export enum FileType {
     UNKNOWN = 'unknown',

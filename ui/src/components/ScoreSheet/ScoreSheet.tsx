@@ -32,7 +32,7 @@ export const ScoreSheet = ({ teamType, period }: ScoreSheetProps) => {
     const lineups = useMemo(() => gameState.lineups[period][teamType].lines, [gameState, period, teamType]);
 
     const { validators } = useValidation();
-    const { validity } = useMemo(() => validators[teamType][period].scoreValidity, [validators[teamType][period].scoreValidity]);
+    const { validity } = useMemo(() => validators[teamType][period].scoreValidity, [validators, teamType, period]);
     
     const calculatePeriodTotal = useCallback((period: Period) =>
         gameState.scores[period][teamType].lines.reduce((p, j) => p + j.trips.reduce((p, t) => p + getTripValue(t), 0), 0),

@@ -2,7 +2,7 @@ import { Skater, TeamRoster, TeamType } from "@contexts"
 import classNames from 'classnames';
 
 import styles from './TeamDetails.module.scss';
-import { range } from "@/rangeMethods";
+import { range } from "@/helperMethods";
 
 interface RosterRowProps {
     skater: Skater;

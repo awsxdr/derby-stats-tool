@@ -3,7 +3,7 @@ import moment from 'moment';
 import { useApiContext } from "@/Api";
 import { AppToaster } from "@components";
 import { Intent } from "@blueprintjs/core";
-import { range } from "@/rangeMethods";
+import { range } from "@/helperMethods";
 
 export enum TeamType {
     HOME = 'home',

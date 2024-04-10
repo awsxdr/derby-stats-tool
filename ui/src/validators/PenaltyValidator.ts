@@ -1,7 +1,7 @@
 import { Period, SkaterLineups, TeamType, useGameContext } from "@contexts";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { OK, Validity, error, getLowestValidityLevel, warning } from ".";
-import { range } from "@/rangeMethods";
+import { isNumeric, range } from "@/helperMethods";
 
 export type PenaltyLineValidities = {
     penaltyTracker: Validity,
@@ -29,8 +29,6 @@ export const DEFAULT_PENALTY_LINES_VALIDITY = (): PenaltyLineValidities => ({
     penaltyTracker: OK,
     lines: range(0, 18).map(DEFAULT_PENALTY_LINE_VALIDITY),
 });
-
-const isNumeric = (value: string) => !isNaN(parseInt(value));
 
 const getSkaters = (line: SkaterLineups) => [
     line.jammer,
@@ -78,18 +76,23 @@ export const usePenaltyValidator = (period: Period, team: TeamType) => {
                 return error('Jam number not found in game');
             }
 
-            const jamLineup = getSkaters(game.lineups[period][team].lines[jamNumber - 1].skaters).map(s => s.number);
-            const skaterNumber = game.rosters[team].skaters[lineIndex]?.number.toLowerCase().trim() ?? '';
+            const jamLineup = game.lineups[period][team].lines
+                .find(l => parseInt(l.jamNumber.trim()) === jamNumber);
 
-            const skaterIsInLineup = skaterNumber != '' && jamLineup.filter(n => n.toLowerCase().trim() === skaterNumber).length > 0;
+            if (jamLineup) {
+                const jamLineupSkaters = getSkaters(jamLineup.skaters).map(s => s.number);
+                const skaterNumber = game.rosters[team].skaters[lineIndex]?.number.toLowerCase().trim() ?? '';
 
-            if (!skaterIsInLineup) {
-                return error('Penalty for skater not in jam lineup');
+                const skaterIsInLineup = skaterNumber != '' && jamLineupSkaters.filter(n => n.toLowerCase().trim() === skaterNumber).length > 0;
+
+                if (!skaterIsInLineup) {
+                    return error('Penalty for skater not in jam lineup');
+                }
             }
         }
 
         return OK;
-    }, [penalties, jams]);
+    }, [penalties, jams, game, period, team]);
 
     const validatePenaltyCode = useCallback((lineIndex: number, penaltyIndex: number) => {
 

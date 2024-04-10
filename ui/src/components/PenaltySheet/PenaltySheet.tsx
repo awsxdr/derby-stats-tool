@@ -1,9 +1,9 @@
-import { ReactElement, useCallback, useMemo } from 'react';
+import { ReactElement, useCallback, useMemo, useState } from 'react';
 import { Cell, Column, ColumnHeaderCell, EditableCell2, Table2 } from '@blueprintjs/table'
 
 import { Penalty, PenaltyLine, Period, TeamType, useGameContext, useValidation } from '@contexts';
 import { StatsTable } from '@components';
-import { range } from '@/rangeMethods';
+import { range } from '@/helperMethods';
 import { OK } from '@validators';
 
 import styles from './PenaltySheet.module.scss';
@@ -25,6 +25,7 @@ interface PenaltySheetProps {
 export const PenaltySheet = ({ teamType, period }: PenaltySheetProps) => {
 
     const { gameState, setGameState } = useGameContext();
+    const [ cellRenderCount, setCellRenderCount ] = useState(0);
 
     const roster = useMemo(() => gameState.rosters[teamType], [gameState, teamType]);
     const penalties = useMemo(() => gameState.penalties[period][teamType].lines, [gameState, teamType, period]);
@@ -39,7 +40,7 @@ export const PenaltySheet = ({ teamType, period }: PenaltySheetProps) => {
     const DEFAULT_PENALTY_LINE: () => PenaltyLine = useCallback(() => Array.from({ length: 10 }, DEFAULT_PENALTY), []);
 
     const { validators } = useValidation();
-    const { validity } = useMemo(() => validators[teamType][period].penaltyValidity, [validators[teamType][period].penaltyValidity]);
+    const { validity } = useMemo(() => validators[teamType][period].penaltyValidity, [validators, period, teamType]);
 
     const createPenaltyLineIfMissing = useCallback((rowIndex: number) => {
         if(!penalties[rowIndex]) {
@@ -63,10 +64,15 @@ export const PenaltySheet = ({ teamType, period }: PenaltySheetProps) => {
         });
     }
 
+    const rerenderTable = useCallback(() => {
+        setCellRenderCount(c => c + 1);
+    }, [setCellRenderCount]);
+
     const handleChange = <T,>(row: number, column: number, setter: (line: Penalty, value: T) => void) => (value: T) => {
         createPenaltyLineIfMissing(row);
         setter(penalties[row][column], value);
         updateGameState();
+        rerenderTable();
     }
 
     const getValidity = useCallback((row: number, column: number) =>
@@ -183,6 +189,7 @@ export const PenaltySheet = ({ teamType, period }: PenaltySheetProps) => {
           setCellData={setCellData}
           deleteCellData={deleteCellData}
           onBatchOperationCompleted={updateGameState}
+          cellRendererDependencies={[validity, cellRenderCount]}
         >
           <Column columnHeaderCellRenderer={renderHeader("1")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(0), White, LightPink)} />
           <Column columnHeaderCellRenderer={renderHeader("2")} cellRenderer={renderAlternatingColorCell(2, renderPenaltyCell(1), White, LightPink)} />

@@ -1,4 +1,4 @@
-import { ReactElement, useCallback, useMemo } from 'react';
+import { ReactElement, useCallback, useMemo, useState } from 'react';
 import { Cell, Column, ColumnHeaderCell, EditableCell2 } from '@blueprintjs/table'
 
 import { StatsTable, ToggleCell } from '@components'
@@ -24,12 +24,13 @@ interface LineupSheetProps {
 
 export const LineupSheet = ({ teamType, period }: LineupSheetProps) => {
     const { gameState, setGameState } = useGameContext();
+    const [ cellRenderCount, setCellRenderCount ] = useState(0);
 
     const lineups = useMemo(() => gameState.lineups[period][teamType].lines, [gameState, period, teamType]);
     const scores = useMemo(() => gameState.scores[period][teamType].lines, [gameState, period, teamType]);
 
     const { validators } = useValidation();
-    const { validity } = useMemo(() => validators[teamType][period].lineupValidity, [validators[teamType][period].lineupValidity]);
+    const { validity } = useMemo(() => validators[teamType][period].lineupValidity, [validators, teamType, period]);
 
     const renderAlternatingColorCell = (cellRenderer: CellRendererFn, lightColor: string, darkColor: string) =>
         (rowIndex: number) => cellRenderer(rowIndex % 2 == 0 ? lightColor : darkColor)(rowIndex);
@@ -71,10 +72,15 @@ export const LineupSheet = ({ teamType, period }: LineupSheetProps) => {
         });
     }
 
+    const rerenderTable = useCallback(() => {
+        setCellRenderCount(c => c + 1);
+    }, [setCellRenderCount]);
+
     const handleChange = <T,>(setter: (line: LineupLine, value: T)=> void) => (rowIndex: number) => (value: T) => {
         createLineupLineIfMissing(rowIndex);
         setter(lineups[rowIndex], value);
         updateGameState();
+        rerenderTable();
     }
 
     const renderJamNumberCell = (color: string) => (rowIndex: number) => (
@@ -233,6 +239,7 @@ export const LineupSheet = ({ teamType, period }: LineupSheetProps) => {
           setCellData={setCellData}
           deleteCellData={deleteCellData}
           onBatchOperationCompleted={updateGameState}
+          cellRendererDependencies={[cellRenderCount, validity]}
         >
           <Column columnHeaderCellRenderer={renderHeader("Jam")} cellRenderer={renderAlternatingColorCell(renderJamNumberCell, LightBlue, MediumBlue)} />
           <Column columnHeaderCellRenderer={renderHeader("No Pivot")} cellRenderer={renderAlternatingColorCell(renderNoPivotCell, LightBlue, MediumBlue)} />

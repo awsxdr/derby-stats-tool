@@ -1,7 +1,7 @@
 import { Period, TeamType, useGameContext } from "@contexts";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { OK, Validity, error, getLowestValidityLevel, info, warning } from "@validators";
-import { range } from "@/rangeMethods";
+import { isNumeric, range } from "@/helperMethods";
 
 export type ScoreLineValidities = {
     scorekeeper: Validity,
@@ -38,7 +38,6 @@ export const DEFAULT_SCORE_VALIDITY = (): ScoreLineValidities => ({
 });
 
 
-const isNumeric = (value: string) => !isNaN(parseInt(value));
 const getScoringTrips = (trips: string[]) => trips.filter(t => t?.trim() !== '');
 
 export const useScoreValidator = (period: Period, team: TeamType) => {
@@ -151,7 +150,7 @@ export const useScoreValidator = (period: Period, team: TeamType) => {
 
         return OK;
 
-    }, [game, scores, team]);
+    }, [game, scores, team, period]);
     
     const validateCall = useCallback(
         (lineIndex: number) => {
@@ -267,7 +266,7 @@ export const useScoreValidator = (period: Period, team: TeamType) => {
 
             resolve(0);
         });
-    }, [scores, validateOfficial, validateJamNumber, validateJammerNumber, validateCall, validateNoInitial, validateTrip]);
+    }, [scores, validateOfficial, validateJamNumber, validateJammerNumber, validateLost, validateCall, validateNoInitial, validateTrip]);
 
     const validityLevel = useMemo(() => getLowestValidityLevel([
         validity.jammerRef.validity,

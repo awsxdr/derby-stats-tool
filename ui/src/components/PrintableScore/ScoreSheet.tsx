@@ -3,7 +3,7 @@ import { GameState, Period, ScoreLine, TeamType } from '@contexts';
 import styles from './ScoreSheet.module.scss';
 import classNames from 'classnames';
 import { ScoreRow } from './ScoreRow';
-import { range } from '@/rangeMethods';
+import { range } from '@/helperMethods';
 import { useCallback, useMemo } from 'react';
 
 interface ScoreSheetProps {

@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router";
 import { Navbar, Tab, TabId, Tabs } from "@blueprintjs/core";
 import classNames from "classnames";
 
@@ -8,11 +9,19 @@ import { TeamType } from "@/contexts";
 import sharedStyles from '@/Shared.module.scss';
 
 export const RostersContainer = () => {
-    const [selectedTab, setSelectedTab] = useState<TabId>('game');
+    const { subTab: selectedTab } = useParams();
+    const navigate = useNavigate();
+
     const [isTransitioning, setIsTransitioning] = useState(false);
 
+    useEffect(() => {
+        if (!selectedTab) {
+            navigate('/edit/igrf/game', { replace: true });
+        }
+    }, [selectedTab, navigate]);
+
     const handleTabChange = (tabId: TabId) => {
-        setSelectedTab(tabId);
+        navigate(`/edit/igrf/${tabId}`);
         setIsTransitioning(true);
     }
 
@@ -38,10 +47,10 @@ export const RostersContainer = () => {
         <>
             <Navbar className={classNames(sharedStyles.subNavBar, sharedStyles.scrollableTabBar)} fixedToTop>
                 <Tabs id='Tabs' onChange={handleTabChange} selectedTabId={selectedTab} renderActiveTabPanelOnly fill>
-                    <Tab id='game' title='Game' />
-                    <Tab id='home' title='Home' />
-                    <Tab id='away' title='Away' />
-                    <Tab id='officials' title='Officials' />
+                    <Tab id='game'>Game</Tab>
+                    <Tab id='home'>Home</Tab>
+                    <Tab id='away'>Away</Tab>
+                    <Tab id='officials'>Officials</Tab>
                 </Tabs>
             </Navbar>
             <div className={sharedStyles.tableContainer}>

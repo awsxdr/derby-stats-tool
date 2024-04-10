@@ -1,4 +1,4 @@
-import { PropsWithChildren, createContext, useContext, useEffect, useMemo } from "react";
+import { PropsWithChildren, createContext, useContext, useMemo } from "react";
 
 import { 
     DEFAULT_LINEUP_LINES_VALIDITY,
@@ -48,13 +48,14 @@ const DEFAULT_VALIDITY = (): Validators => ({
 type PeriodValidityLevels = { [period in Period]: ValidityLevel };
 type TeamValidityLevels = { [team in TeamType]: PeriodValidityLevels };
 
-type SheetValidity = {
+export type SheetValidity = {
     validity: TeamValidityLevels;
     validityLevel: ValidityLevel;
 }
 
 type ValidationContextProps = {
     validators: Validators;
+    validity: ValidityLevel,
     igrfValidity: ValidityLevel;
     scoreValidity: SheetValidity;
     penaltyValidity: SheetValidity;
@@ -71,6 +72,7 @@ const DEFAULT_SHEET_VALIDITY = (): SheetValidity => ({
 
 const ValidationContext = createContext<ValidationContextProps>({ 
     validators: DEFAULT_VALIDITY(),
+    validity: ValidityLevel.VALID,
     igrfValidity: ValidityLevel.VALID,
     scoreValidity: DEFAULT_SHEET_VALIDITY(),
     penaltyValidity: DEFAULT_SHEET_VALIDITY(),
@@ -130,8 +132,6 @@ export const ValidationContextProvider = ({ children }: PropsWithChildren) => {
         ]),
     }), [validators.home[1].scoreValidity, validators.home[2].scoreValidity, validators.away[1].scoreValidity, validators.away[2].scoreValidity]);
 
-    useEffect(() => console.log(scoreValidity), [scoreValidity]);
-
     const penaltyValidity = useMemo(() => ({
         validity: {
             home: {
@@ -168,10 +168,17 @@ export const ValidationContextProvider = ({ children }: PropsWithChildren) => {
             validators.away[1].lineupValidity.validityLevel,
             validators.away[2].lineupValidity.validityLevel,
         ]),
-    }), [validators.home[1].lineupValidity, validators.home[2].lineupValidity, validators.away[1].lineupValidity, validators.away[2].lineupValidity]);
+    }), [validators.home, validators.away]);
+
+    const validity = getLowestValidityLevel([ 
+        igrfValidity, 
+        scoreValidity.validityLevel, 
+        penaltyValidity.validityLevel, 
+        lineupValidity.validityLevel 
+    ]);
 
     return (
-        <ValidationContext.Provider value={{ validators, igrfValidity, scoreValidity, penaltyValidity, lineupValidity }}>
+        <ValidationContext.Provider value={{ validators, validity, igrfValidity, scoreValidity, penaltyValidity, lineupValidity }}>
             { children }
         </ValidationContext.Provider>
     )

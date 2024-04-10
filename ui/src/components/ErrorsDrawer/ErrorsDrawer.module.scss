@@ -1,0 +1,23 @@
+@import '@/Variables.scss';
+
+.noIssuesText {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    flex-direction: column;
+    font-style: italic;
+}
+
+.responsiveDrawer {
+    width: 800px !important;
+    max-width: 100% !important;
+}
+
+.errorsDrawerBody {
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: $footerHeight;
+    padding-bottom: 50px;
+}

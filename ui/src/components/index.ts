@@ -1,4 +1,5 @@
 export * from './AppToaster';
+export * from './ErrorsDrawer';
 export * from './Footer';
 export * from './GameDetailsSheet';
 export * from './ImportDialog';
@@ -19,4 +20,5 @@ export * from './ScoreSheetsContainer';
 export * from './StatsTable';
 export * from './SuggestOfficial';
 export * from './ToggleCell';
+export * from './ValidityButton';
 export * from './ValidityIcon';

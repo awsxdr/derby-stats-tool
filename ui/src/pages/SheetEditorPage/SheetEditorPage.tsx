@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router';
 import { Alert, Alignment, Button, Card, Icon, Intent, Menu, MenuDivider, MenuItem, Navbar, Overlay2, Popover, Spinner, Tab, TabId, Tabs, Tooltip } from '@blueprintjs/core'
 import classNames from 'classnames';
 
-import { AppToaster, Footer, ImportDialog, LineupContainer, PenaltiesContainer, RostersContainer, ScoreSheetsContainer, ValidityIcon } from '@components';
+import { AppToaster, ErrorsDrawer, Footer, ImportDialog, LineupContainer, PenaltiesContainer, RostersContainer, ScoreSheetsContainer, ValidityButton, ValidityIcon } from '@components';
 import { DefaultGameState, useGameContext, useUserInfoContext, useUserLoginContext, useValidation } from '@contexts';
 import { useApiContext } from '@/Api';
 
@@ -17,14 +17,14 @@ export const SheetEditorPage = () => {
     const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
     const [isWarnNoBlankStatsOpen, setIsWarnNoBlankStatsOpen] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
+    const [isErrorDrawerOpen, setIsErrorDrawerOpen] = useState(false);
 
     const { gameState, setGameState, isLoading, isDirty, isFaulted, retryUpload } = useGameContext();
     const { logout } = useUserLoginContext();
     const { user } = useUserInfoContext();
     const { api } = useApiContext();
-    const navigate = useNavigate();
 
-    const { igrfValidity, scoreValidity, penaltyValidity, lineupValidity } = useValidation();
+    const { validity, igrfValidity, scoreValidity, penaltyValidity, lineupValidity } = useValidation();
 
     const showSpinner = useMemo(() => !user || isLoading, [user, isLoading]);
   
@@ -64,6 +64,14 @@ export const SheetEditorPage = () => {
         setIsImportDialogOpen(false);
     }, [setIsImportDialogOpen]);
 
+    const handleValidityButtonClick = useCallback(() => {
+        setIsErrorDrawerOpen(true);
+    }, [setIsErrorDrawerOpen]);
+
+    const handleErrorDrawerClose = useCallback(() => {
+        setIsErrorDrawerOpen(false);
+    }, [setIsErrorDrawerOpen]);
+
     const UserMenu = () => (
         <Menu>
             <MenuItem text='Print' icon='print' href='/print' target='_blank' />
@@ -94,12 +102,12 @@ export const SheetEditorPage = () => {
                     <Navbar.Divider />
                 </Navbar.Group>
                 <Navbar.Group align={Alignment.RIGHT}>
+                    <ValidityButton validity={validity} minimal onClick={handleValidityButtonClick} />
                     {(
                         isFaulted ? <Button minimal icon='cloud-upload' intent='danger' onClick={retryUpload} />
                         : isDirty ? <Icon icon='cloud-upload' intent='warning' className={classNames(styles.uploadingStatus, styles.statusIcon)} />
                         : <Icon icon='cloud-tick' intent='success' className={styles.statusIcon} />
                     )}
-                    
                     <Popover content={<UserMenu />} placement='bottom-start'>
                         <Button minimal icon='menu' />
                     </Popover>
@@ -153,6 +161,7 @@ export const SheetEditorPage = () => {
                 <p>Blank stats books can be <a href='https://community.wftda.org/resources/document-libraries/competition-documents#statsbook' target='_blank'>downloaded from WFTDA</a></p>
             </Alert>
             <ImportDialog isOpen={isImportDialogOpen} onClose={handleImportClose} />
+            <ErrorsDrawer isOpen={isErrorDrawerOpen} onClose={handleErrorDrawerClose} />
         </>
     );
 }

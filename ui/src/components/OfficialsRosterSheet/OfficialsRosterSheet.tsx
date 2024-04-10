@@ -1,11 +1,14 @@
-import { useCallback, useState } from "react";
-import { Alert, Button, CardList, HotkeyConfig, HotkeysTarget2, Intent } from "@blueprintjs/core";
+import { useCallback, useMemo, useState } from "react";
+import { Column, ColumnHeaderCell, EditableCell2 } from "@blueprintjs/table";
 
+import { StatsTable, SuggestEditCell } from "@components";
 import { Official, useGameContext } from "@contexts";
+
 import { Role } from "./Role";
 
+import * as Colors from '@/Colors';
+
 import styles from './OfficialsRosterSheet.module.scss';
-import { OfficialItem } from "./OfficialItem";
 
 const DEFAULT_ROLES: Role[] = [
     { name: "Head Non-Skating Official", initials: "HNSO" },
@@ -36,6 +39,8 @@ export const OfficialsRosterSheet = () => {
     const [selectedOfficialIndex, setSelectedOfficialIndex] = useState<number>();
 
     const { gameState, setGameState } = useGameContext();
+
+    const officials = useMemo(() => gameState.officials, [gameState]);
 
     const addOfficial = useCallback(() => {
         setGameState({ ...gameState, officials: [...gameState.officials, DEFAULT_OFFICIAL()]})
@@ -73,83 +78,154 @@ export const OfficialsRosterSheet = () => {
     }
 
     const handleRoleAdded = useCallback((role: string) => {
-        setRoles(current => [...current.filter(v => v.name.toLowerCase() !== role.toLowerCase()), { name: role }]);
-        return role;
+        const newRole = { name: role };
+        setRoles(current => [...current.filter(v => v.name.toLowerCase() !== role.toLowerCase()), newRole]);
+        return newRole;
     }, [setRoles]);
+
+    const renderHeader = (name: string) => () => (
+        <ColumnHeaderCell style={{ backgroundColor: Colors.Black, color: Colors.White }}>
+            <span style={{ fontSize: '8pt' }}>{ name }</span>
+        </ColumnHeaderCell>
+    );
+
+    const updateGameState = useCallback(() => {
+        setGameState({ ...gameState, officials });
+    }, [gameState, officials, setGameState])
     
-    const deleteOfficial = useCallback(() => {
-        setGameState({ ...gameState, officials: [ ...gameState.officials.slice(0, selectedOfficialIndex), ...gameState.officials.slice((selectedOfficialIndex ?? 0) + 1) ]});
-        setIsDeleteOfficialWarningOpen(false);
-    }, [gameState, setGameState, selectedOfficialIndex]);
+    const getCellData = useCallback((row: number, column: number): string => {
+        switch (column) {
+            case 0:
+                return officials[row].role;
+            case 1:
+                return officials[row].name;
+            case 2:
+                return officials[row].league;
+            case 3:
+                return officials[row].certificationLevel;
+        }
 
-    const valueOrBlank = (array: string[], index: number) => array.length > index ? array[index] : '';
+        return '';
+    }, [officials]);
 
-    const handlePaste = useCallback(async () => {
-        const pastedOfficials: Official[] = 
-            (await navigator.clipboard.readText())
-            .split(/\r?\n/)
-            .filter(l => l.trim().length > 0)
-            .map(l => l.split(/\t+/))
-            .map(o => ({
-                role: valueOrBlank(o, 0),
-                name: valueOrBlank(o, 1),
-                league: valueOrBlank(o, 2),
-                certificationLevel: valueOrBlank(o, 3),
-            }));
+    const setCellData = useCallback((row: number, column: number, value: string) => {
+        switch (column) {
+            case 0:
+                officials[row].role = value;
+                break;
+            case 1:
+                officials[row].name = value;
+                break;
+            case 2:
+                officials[row].league = value;
+                break;
+            case 3:
+                officials[row].certificationLevel = value;
+                break;
+        }
+    }, [officials]);
 
-        setGameState({
-            ...gameState,
-            officials: [
-                ...gameState.officials,
-                ...pastedOfficials
-            ]
-        });
-    }, [gameState, setGameState]);
+    const deleteCellData = useCallback((row: number, column: number) => {
+        switch (column) {
+            case 0:
+                officials[row].role = '';
+                break;
+            case 1:
+                officials[row].name = '';
+                break;
+            case 2:
+                officials[row].league = '';
+                break;
+            case 3:
+                officials[row].certificationLevel = '';
+                break;
+        }
 
-    const hotkeys: HotkeyConfig[] = [
-        {
-            combo: 'mod+v',
-            label: 'Paste',
-            onKeyDown: handlePaste,
-            global: true,
-        },
-    ];
+        if (officials[row].role === '' && officials[row].name === '' && officials[row].league === '' && officials[row].certificationLevel === '') {
+            setGameState({ ...gameState, officials: officials.splice(row, 1) })
+        }
+    }, [officials, gameState, setGameState]);
+
+    const createOfficialIfNeeded = useCallback((row: number) => {
+        if (!officials[row]) {
+            officials[row] = DEFAULT_OFFICIAL();
+        }
+    }, [officials])
+
+    const handleRoleConfirm = useCallback((rowIndex: number) => (value: string) => {
+        createOfficialIfNeeded(rowIndex);
+        officials[rowIndex].name = value;
+        updateGameState();
+    }, [officials, createOfficialIfNeeded, updateGameState]);
+
+    const renderRoleCell = (color: string) => (rowIndex: number) => (
+        <SuggestEditCell<Role>
+            style={{ backgroundColor: color }}
+            value={roles.find(r => r.name === officials[rowIndex]?.role)}
+            possibleValues={roles}
+            valuesEqual={(l, r) => l?.name === r?.name}
+            createNewPossibleValue={s => handleRoleAdded(s)}
+            valueRenderer={v => v?.name ?? ''}
+        />
+    );
+
+    const handleNameConfirm = useCallback((rowIndex: number) => (value: string) => {
+        createOfficialIfNeeded(rowIndex);
+        officials[rowIndex].name = value;
+        updateGameState();
+    }, [officials, createOfficialIfNeeded, updateGameState]);
+
+    const renderNameCell = (color: string) => (rowIndex: number) => (
+        <EditableCell2 
+            style={{ backgroundColor: color }}
+            value={(officials && officials[rowIndex]?.name) ?? ''}
+            onConfirm={handleNameConfirm(rowIndex)}
+        />
+    );
+
+    const handleLeagueConfirm = useCallback((rowIndex: number) => (value: string) => {
+        createOfficialIfNeeded(rowIndex);
+        officials[rowIndex].league = value;
+        updateGameState();
+    }, [officials, createOfficialIfNeeded, updateGameState]);
+
+    const renderLeagueCell = (color: string) => (rowIndex: number) => (
+        <EditableCell2 
+            style={{ backgroundColor: color }}
+            value={(officials && officials[rowIndex]?.league) ?? ''}
+            onConfirm={handleLeagueConfirm(rowIndex)}
+        />
+    );
+
+    const handleCertificationConfirm = useCallback((rowIndex: number) => (value: string) => {
+        createOfficialIfNeeded(rowIndex);
+        officials[rowIndex].certificationLevel = value;
+        updateGameState();
+    }, [officials, createOfficialIfNeeded, updateGameState]);
+
+    const renderCertificationCell = (color: string) => (rowIndex: number) => (
+        <EditableCell2 
+            style={{ backgroundColor: color }}
+            value={(officials && officials[rowIndex]?.certificationLevel) ?? ''}
+            onConfirm={handleCertificationConfirm(rowIndex)}
+        />
+    );
 
     return (
-        <>
-            <HotkeysTarget2 hotkeys={hotkeys} options={{ showDialogKeyCombo: 'invalid' }}>
-                <div className={styles.officialsRoster}>
-                    <div className={styles.officialsContainer}>
-                        <CardList bordered>
-                            { gameState.officials.map((o, i) => (
-                                <OfficialItem 
-                                    official={o} 
-                                    roles={roles} 
-                                    index={i}
-                                    onDelete={handleDeleteOfficial} 
-                                    onRoleChange={handleRoleSet}
-                                    onNameChange={handleNameSet}
-                                    onLeagueChange={handleLeagueSet}
-                                    onCertificationLevelChange={handleCertificationLevelSet}
-                                    onRoleAdded={handleRoleAdded}
-                                    onAddNewItem={addOfficial}
-                                />
-                            )) }
-                        </CardList>
-                    </div>
-                    <Button icon='plus' outlined onClick={addOfficial} />
-                </div>
-            </HotkeysTarget2>
-            <Alert
-                cancelButtonText='No'
-                confirmButtonText='Yes'
-                intent={Intent.DANGER}
-                isOpen={isDeleteOfficialWarningOpen}
-                onCancel={closeDeleteOfficialWarning}
-                onConfirm={deleteOfficial}
+        <div className={styles.officialsTable}>
+            <StatsTable
+                rowCount={officials.length + 1}
+                columnWidths={[200, 200, 200, 100]}
+                getCellData={getCellData}
+                setCellData={setCellData}
+                deleteCellData={deleteCellData}
+                onBatchOperationCompleted={updateGameState}
             >
-                <p>Delete official?</p>
-            </Alert>
-        </>
+                <Column columnHeaderCellRenderer={renderHeader("Role")} cellRenderer={renderRoleCell(Colors.White)} />
+                <Column columnHeaderCellRenderer={renderHeader("Name")} cellRenderer={renderNameCell(Colors.White)} />
+                <Column columnHeaderCellRenderer={renderHeader("League affiliation")} cellRenderer={renderLeagueCell(Colors.White)} />
+                <Column columnHeaderCellRenderer={renderHeader("Cert. level")} cellRenderer={renderCertificationCell(Colors.White)} />
+            </StatsTable>
+        </div>
     );
 }

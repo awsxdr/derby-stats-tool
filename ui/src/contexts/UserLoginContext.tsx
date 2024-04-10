@@ -27,6 +27,7 @@ interface UserLoginContextProps {
     startLogin: () => void,
     startRegister: () => void,
     logout: () => void,
+    expireToken: () => void,
     token?: string;
 }
 
@@ -35,6 +36,7 @@ const UserLoginContext = createContext<UserLoginContextProps>({
     startLogin: () => {},
     startRegister: () => {},
     logout: () => {},
+    expireToken: () => {},
     token: "",
  });
 
@@ -165,6 +167,10 @@ export const UserLoginContextProvider = ({ children }: PropsWithChildren) => {
         window.location.href = logoutUrl;
     }, [refreshToken, setToken, setRefreshToken, setExpiryDate, setLoginStatus]);
 
+    const expireToken = useCallback(() => {
+        setExpiryDate(0);
+    }, [setExpiryDate]);
+
     useEffect(() => {
         const getToken = async () => {
             const search = new URLSearchParams(window.location.search);
@@ -236,6 +242,7 @@ export const UserLoginContextProvider = ({ children }: PropsWithChildren) => {
             startLogin,
             startRegister,
             logout,
+            expireToken,
             token,
         }}>
             {loginStatus !== LoginStatus.INDETERMINATE && children}

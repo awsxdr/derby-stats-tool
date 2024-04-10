@@ -15,7 +15,7 @@ interface IApi {
     setDocument: (game: GameState) => Promise<void>,
 }
 
-const Api = (token: string): IApi => ({
+const Api = (token: string, expireToken: () => void): IApi => ({
     uploadBlankStatsBook: async (fileName: string, fileContents: string) => {
         const response = await fetch('https://stats.awsxdr.com/api/stats/blank', {
             method: 'POST',
@@ -27,6 +27,9 @@ const Api = (token: string): IApi => ({
         });
 
         if(!response.ok) {
+            if (response.status === 401) {
+                expireToken();
+            }
             throw new Error(`Upload failed. Status code: ${response.status}`);
         }
     },
@@ -50,6 +53,9 @@ const Api = (token: string): IApi => ({
         });
 
         if (!response.ok) {
+            if (response.status === 401) {
+                expireToken();
+            }
             throw new Error("Failed to export stats book");
         }
 
@@ -82,6 +88,10 @@ const Api = (token: string): IApi => ({
                 if(response.status === 404) {
                     return { isDefault: true, game: DefaultGameState() };
                 } else {
+                    if (response.status === 401) {
+                        expireToken();
+                    }
+        
                     throw new Error(`Unexpected status code: ${response.status}`);
                 }
             }
@@ -98,6 +108,10 @@ const Api = (token: string): IApi => ({
         });
 
         if (!response.ok) {
+            if (response.status === 401) {
+                expireToken();
+            }
+
             throw new Error(`Error uploading changes. Status code: ${response.status}`);
         }
     },
@@ -113,9 +127,9 @@ export const useApiContext = () => useContext(ApiContext);
 
 export const ApiProvider = ({ children }: PropsWithChildren) => {
 
-    const { token } = useUserLoginContext();
+    const { token, expireToken } = useUserLoginContext();
 
-    const api = useMemo(() => token ? Api(token) : undefined, [token]);
+    const api = useMemo(() => token ? Api(token, expireToken) : undefined, [token, expireToken]);
 
     return (
         <ApiContext.Provider value={{ api }}>

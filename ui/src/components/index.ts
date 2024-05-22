@@ -18,7 +18,6 @@ export * from './ScoreOfficialsSheet';
 export * from './ScoreSheet';
 export * from './ScoreSheetsContainer';
 export * from './StatsTable';
-export * from './SuggestEditCell';
 export * from './SuggestOfficial';
 export * from './ToggleCell';
 export * from './ValidityButton';

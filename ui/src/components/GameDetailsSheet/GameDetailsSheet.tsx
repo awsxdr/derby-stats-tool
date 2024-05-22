@@ -1,4 +1,4 @@
-import { FormGroup, InputGroup } from "@blueprintjs/core";
+import { ControlGroup, FormGroup, InputGroup, NumericInput } from "@blueprintjs/core";
 import { DateInput3 } from "@blueprintjs/datetime2";
 import moment from 'moment';
 
@@ -10,7 +10,7 @@ export const GameDetailsSheet = () => {
 
     const { gameState, setGameState } = useGameContext();
 
-    const updateState = (update: (game: GameDetails, value: string) => void) => (value: string) => {
+    const updateState = <TValue,>(update: (game: GameDetails, value: TValue) => void) => (value: TValue) => {
         const game = gameState.game;
         update(game, value);
         setGameState({ ...gameState, game});
@@ -36,21 +36,44 @@ export const GameDetailsSheet = () => {
             <FormGroup label="Host league name" labelFor="host-input" fill>
                 <InputGroup id="host-input" fill value={gameState.game.hostLeague} onValueChange={updateState((g, v) => g.hostLeague = v)} />
             </FormGroup>
-            <FormGroup label="Date & time" labelFor="date-time-input" fill>
-                <DateInput3 
-                    timePickerProps={{ 
-                        value: new Date(moment(gameState.game.time).date()),
-                        onChange: value => updateState((g, v) => g.time = v)(moment(value).format('HH:mm')),
-                    }} 
-                    popoverProps={{ placement: "bottom" }}
-                    closeOnSelection 
-                    fill 
-                    value={`${gameState.game.date} ${gameState.game.time}`} 
-                    onChange={value => updateState((g, v) => {
-                        const date = moment(v);
-                        g.date = date.format('YYYY-MM-DD');
-                    })(value || moment(Date.now()).format('YYYY-MM-DD'))}
-                />
+            <FormGroup label="Date & time" labelFor="date-input" fill>
+                <ControlGroup fill>
+                    <DateInput3 
+                        inputProps={{ id: 'date-time-input' }}
+                        popoverProps={{ placement: "bottom" }}
+                        closeOnSelection 
+                        fill 
+                        value={`${gameState.game.date}`} 
+                        onChange={value => updateState((g, v: string) => {
+                            const date = moment(v);
+                            g.date = date.format('YYYY-MM-DD');
+                        })(value || moment(Date.now()).format('YYYY-MM-DD'))}
+                    />
+                </ControlGroup>
+                <ControlGroup fill>
+                    <NumericInput
+                        allowNumericCharactersOnly
+                        selectAllOnFocus
+                        selectAllOnIncrement
+                        fill
+                        value={gameState.game.time.split(':')?.[0] ?? '12'}
+                        onValueChange={updateState((g, v) => {
+                            const time = moment(`2000-01-01 ${v}:${g.time.split(':')?.[1] ?? '00'}`);
+                            g.time = time.format('hh:mm');
+                        })}
+                    />
+                    <NumericInput
+                        allowNumericCharactersOnly
+                        selectAllOnFocus
+                        selectAllOnIncrement
+                        fill
+                        value={gameState.game.time.split(':')?.[1] ?? '00'}
+                        onValueChange={updateState((g, v) => {
+                            const time = moment(`2000-01-01 ${g.time.split(':')?.[0] ?? '12'}:${v}`);
+                            g.time = time.format('hh:mm');
+                        })}
+                    />
+                </ControlGroup>
             </FormGroup>
         </div>
     );

@@ -1,6 +1,7 @@
 import { PropsWithChildren, createContext, useContext, useMemo } from "react";
 import { useUserLoginContext } from "./contexts/UserLoginContext";
 import { DefaultGameState, GameState } from "./contexts/GameStateContext";
+import moment from "moment";
 
 type DocumentResponse = {
     game: GameState,
@@ -65,7 +66,7 @@ const Api = (token: string, expireToken: () => void): IApi => ({
 
         const statsBookName = 
             !!game.rosters.home.team && !!game.rosters.away.team
-            ? `STATS-${game.game.date}_${game.rosters.home.league.replace(/\s/g, '')}${game.rosters.home.team.replace(/\s/g, '')}_vs_${game.rosters.away.league.replace(/\s/g, '')}${game.rosters.away.team.replace(/\s/g, '')}.xlsx`
+            ? `STATS-${moment(game.game.date).format('YYYY-MM-DD')}_${game.rosters.home.league.replace(/\s/g, '')}${game.rosters.home.team.replace(/\s/g, '')}_vs_${game.rosters.away.league.replace(/\s/g, '')}${game.rosters.away.team.replace(/\s/g, '')}.xlsx`
             : 'statsbook.xlsx';
 
         link.download = statsBookName;

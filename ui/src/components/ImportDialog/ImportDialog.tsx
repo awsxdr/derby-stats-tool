@@ -1,8 +1,7 @@
 import { DialogStep, DialogStepId, Intent, MultistepDialog } from "@blueprintjs/core";
 import { SelectFilePanel } from "./SelectFilePanel";
-import { useCallback, useState, useMemo, useEffect } from "react";
-import { VerifyPanel } from "./VerifyPanel";
-import { FileInfo, useImporter } from "@/StatsImporter";
+import { useCallback, useState, useMemo } from "react";
+import { useImporter } from "@/StatsImporter";
 import { ConfirmPanel } from "./ConfirmPanel";
 
 interface ImportDialogProps {
@@ -16,21 +15,12 @@ export const ImportDialog = ({ isOpen, onClose }: ImportDialogProps) => {
     const [selectedFile, setSelectedFile] = useState<File>();
     const [isBackButtonEnabled, setIsBackButtonEnabled] = useState(true);
     const [isNextButtonEnabled, setIsNextButtonEnabled] = useState(false);
-    const [fileInfo, setFileInfo] = useState<FileInfo>();
     const [currentStepId, setCurrentStepId] = useState<DialogStepId>('selectFile');
     const [isImporting, setIsImporting] = useState(false);
 
-    const { isLoading: isFileLoading, getFileInfo, importData } = useImporter(selectedFile);
+    const { isLoading: isFileLoading, importData } = useImporter(selectedFile);
 
     const isLoading = useMemo(() => isFileLoading && currentStepId === 'verify', [isFileLoading, currentStepId]);
-
-    useEffect(() => {
-        
-        if (isFileLoading) return;
-
-        setFileInfo(getFileInfo());
-
-    }, [isFileLoading, getFileInfo]);
 
     const handleFileSelected = useCallback((file?: File) => {
 
@@ -56,12 +46,11 @@ export const ImportDialog = ({ isOpen, onClose }: ImportDialogProps) => {
         setSelectedFile(undefined);
         setIsBackButtonEnabled(true);
         setIsNextButtonEnabled(false);
-        setFileInfo(undefined);
         setCurrentStepId('selectFile');
         setIsImporting(false);
 
         onClose && onClose();
-    }, [setSelectedFileName, setSelectedFile, setIsBackButtonEnabled, setIsNextButtonEnabled, setFileInfo, setCurrentStepId, setIsImporting, onClose]);
+    }, [setSelectedFileName, setSelectedFile, setIsBackButtonEnabled, setIsNextButtonEnabled, setCurrentStepId, setIsImporting, onClose]);
 
     return (
         <>
@@ -82,11 +71,6 @@ export const ImportDialog = ({ isOpen, onClose }: ImportDialogProps) => {
                     id='selectFile'
                     panel={<SelectFilePanel selectedFileName={selectedFileName} onFileSelected={handleFileSelected} />}
                     title='Select file'
-                />
-                <DialogStep
-                    id='verify'
-                    panel={<VerifyPanel fileInfo={fileInfo} />}
-                    title='Verify data'
                 />
                 <DialogStep
                     id='confirm'

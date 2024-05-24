@@ -86,7 +86,7 @@ export const SheetEditorPage = () => {
         <>
             <Navbar fixedToTop>
                 <Navbar.Group align={Alignment.LEFT} className={styles.logo}>
-                    <Navbar.Heading>DerbyStats</Navbar.Heading>
+                    <Navbar.Heading>DerbyStatsBook</Navbar.Heading>
                     <Navbar.Divider />
                 </Navbar.Group>
                 <Navbar.Group align={Alignment.LEFT}>

@@ -14,7 +14,7 @@ export const SplashPage = () => {
         <>
             <Navbar fixedToTop>
                 <Navbar.Group align={Alignment.LEFT}>
-                    <Navbar.Heading>DerbyStats</Navbar.Heading>
+                    <Navbar.Heading>DerbyStatsBook</Navbar.Heading>
                 </Navbar.Group>
                 <Navbar.Group align={Alignment.RIGHT}>
                     <Button intent={Intent.PRIMARY} onClick={startRegister}>Register</Button>
@@ -30,8 +30,8 @@ export const SplashPage = () => {
             </div>
             <div className={styles.bodyContainer}>
                 <Card className={styles.bodyCard} elevation={2}>
-                    <h2>Welcome to DerbyStats!</h2>
-                    <p>DerbyStats is an interactive platform for creating and editing roller derby stats books.</p>
+                    <h2>Welcome to DerbyStatsBook.com!</h2>
+                    <p>DerbyStatsBook is an interactive platform for creating and editing roller derby stats books.</p>
                     <p>It is currently in early development and so there are likely to be bugs and missing features. However, please feel free to sign up and have a play around. We're very keen to receive any feedback (positive or negative), and would love to hear what features you would like to see in future.</p>
                     <Button intent={Intent.PRIMARY} onClick={startRegister}>Register for an account</Button>
                 </Card>

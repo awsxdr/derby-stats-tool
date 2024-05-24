@@ -57,9 +57,11 @@ export const GameDetailsSheet = () => {
                         selectAllOnIncrement
                         fill
                         value={gameState.game.time.split(':')?.[0] ?? '12'}
+                        min={0}
+                        max={23}
                         onValueChange={updateState((g, v) => {
                             const time = moment(`2000-01-01 ${v}:${g.time.split(':')?.[1] ?? '00'}`);
-                            g.time = time.format('hh:mm');
+                            g.time = time.format('HH:mm');
                         })}
                     />
                     <NumericInput
@@ -68,9 +70,11 @@ export const GameDetailsSheet = () => {
                         selectAllOnIncrement
                         fill
                         value={gameState.game.time.split(':')?.[1] ?? '00'}
+                        min={0}
+                        max={59}
                         onValueChange={updateState((g, v) => {
                             const time = moment(`2000-01-01 ${g.time.split(':')?.[0] ?? '12'}:${v}`);
-                            g.time = time.format('hh:mm');
+                            g.time = time.format('HH:mm');
                         })}
                     />
                 </ControlGroup>

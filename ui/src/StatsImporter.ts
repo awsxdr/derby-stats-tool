@@ -4,6 +4,7 @@ import { GameState, LineupItem, useGameContext } from "./contexts";
 import { AppToaster } from "./components";
 import { Intent } from "@blueprintjs/core";
 import { range } from "./helperMethods";
+import moment from "moment";
 
 export enum FileType {
     UNKNOWN = 'unknown',
@@ -141,6 +142,8 @@ export const useImporter = (file?: File) => {
             number: skater.number.trim() === '' ? scores.getCell(`${column === numberFromColumn('C') ? 'B' : 'U'}${row}`).text : skater.number,
         });
 
+        console.log(igrf.getCell('I7').text);
+
         const game: GameState = {
             game: { 
                 venue: igrf.getCell('B3').text, 
@@ -149,8 +152,8 @@ export const useImporter = (file?: File) => {
                 gameNumber: igrf.getCell('L3').text, 
                 tournament: igrf.getCell('B5').text, 
                 hostLeague: igrf.getCell('I5').text, 
-                date: igrf.getCell('B7').text, 
-                time: igrf.getCell('I7').text?.match(/\d{1,2}:\d{2}/)?.[0] ?? '12:00', 
+                date: moment(igrf.getCell('B7').text).format('YYYY-MM-DD'), 
+                time: moment(igrf.getCell('I7').text).format('HH:mm'), 
             },
             officials: 
                 range(60, 87).map(row => ({

@@ -142,8 +142,6 @@ export const useImporter = (file?: File) => {
             number: skater.number.trim() === '' ? scores.getCell(`${column === numberFromColumn('C') ? 'B' : 'U'}${row}`).text : skater.number,
         });
 
-        console.log(igrf.getCell('I7').text);
-
         const game: GameState = {
             game: { 
                 venue: igrf.getCell('B3').text, 

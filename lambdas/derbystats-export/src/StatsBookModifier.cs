@@ -250,7 +250,6 @@ public static class StatsBookModifier
 		var officials = stats.Officials.ToList();
 		string[] targetOrder = [
 			"Head Non-Skating Official",
-			"Penalty Tracker",
 			"Penalty Wrangler",
 			"Inside Whiteboard Operator",
 			"Jam Timer",
@@ -262,10 +261,11 @@ public static class StatsBookModifier
 			"Penalty Box Manager",
 			"Penalty Box Timer",
 			"Penalty Box Timer",
-			"Lineup Tracker",
-			"Lineup Tracker",
 			"Non-Skating Official Alternate",
 			"Period Timer",
+			"",
+			"",
+			"",
 			"",
 			"",
 			"",

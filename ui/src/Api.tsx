@@ -2,6 +2,7 @@ import { PropsWithChildren, createContext, useContext, useMemo } from "react";
 import { useUserLoginContext } from "./contexts/UserLoginContext";
 import { DefaultGameState, GameState } from "./contexts/GameStateContext";
 import moment from "moment";
+import { BASE_ADDRESS } from "./Constants";
 
 type DocumentResponse = {
     game: GameState,
@@ -18,7 +19,7 @@ interface IApi {
 
 const Api = (token: string, expireToken: () => void): IApi => ({
     uploadBlankStatsBook: async (fileName: string, fileContents: string) => {
-        const response = await fetch('https://stats.awsxdr.com/api/stats/blank', {
+        const response = await fetch(`https://${BASE_ADDRESS}/api/stats/blank`, {
             method: 'POST',
             headers: [["Authorization", `Bearer ${token}`]],
             body: JSON.stringify({
@@ -36,7 +37,7 @@ const Api = (token: string, expireToken: () => void): IApi => ({
     },
 
     getBlankStatsBooks: async () => {
-        const response = await fetch('https://stats.awsxdr.com/api/stats/blank', {
+        const response = await fetch(`https://${BASE_ADDRESS}/api/stats/blank`, {
             method: 'GET',
             headers: [["Authorization", `Bearer ${token}`]],
         });
@@ -47,7 +48,7 @@ const Api = (token: string, expireToken: () => void): IApi => ({
     },
 
     exportStatsBook: async (game: GameState) => {
-        const response = await fetch('https://stats.awsxdr.com/api/export', { 
+        const response = await fetch(`https://${BASE_ADDRESS}/api/export`, { 
             method: 'POST',
             body: JSON.stringify(game),
             headers: [["Authorization", `Bearer ${token}`]],
@@ -78,7 +79,7 @@ const Api = (token: string, expireToken: () => void): IApi => ({
 
     getDocument: async () => {
         try {
-            const response = await fetch('https://stats.awsxdr.com/api/stats', {
+            const response = await fetch(`https://${BASE_ADDRESS}/api/stats`, {
                 method: 'GET',
                 headers: [["Authorization", `Bearer ${token}`]],
             });
@@ -102,7 +103,7 @@ const Api = (token: string, expireToken: () => void): IApi => ({
     },
 
     setDocument: async (game: GameState) => {
-        const response = await fetch('https://stats.awsxdr.com/api/stats', {
+        const response = await fetch(`https://${BASE_ADDRESS}/api/stats`, {
             method: 'POST',
             body: JSON.stringify(game),
             headers: [["Authorization", `Bearer ${token}`]],

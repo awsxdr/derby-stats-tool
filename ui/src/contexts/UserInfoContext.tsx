@@ -3,6 +3,7 @@ import { LoginStatus, useUserLoginContext } from "./UserLoginContext";
 import { useApiContext } from "@/Api";
 import { AppToaster } from "@/components";
 import { Intent } from "@blueprintjs/core";
+import { BASE_ADDRESS } from "@/Constants";
 
 type BlankStatsBookDetails = {
     filename: string,
@@ -38,7 +39,7 @@ export const UserInfoContextProvider = ({ children }: PropsWithChildren) => {
     const { token, loginStatus } = useUserLoginContext();
 
     const getUserData = useCallback(async () => {
-        const userInfoResponse = await fetch('https://auth.awsxdr.com/oauth2/userInfo', {
+        const userInfoResponse = await fetch(`https://auth.${BASE_ADDRESS}/oauth2/userInfo`, {
             method: 'GET',
             headers: [
                 ['Authorization', `Bearer ${token}` ]
